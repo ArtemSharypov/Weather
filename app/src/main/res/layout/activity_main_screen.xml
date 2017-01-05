@@ -1,0 +1,246 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    android:id="@+id/activity_main_screen"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.artem.weather.MainScreen">
+
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:background="?attr/colorPrimary"
+        android:elevation="4dp"
+        android:layout_alignBottom="@+id/feels_like"
+        android:layout_alignParentStart="true" />
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="wrap_content"
+        android:layout_below="@+id/toolbar"
+        android:layout_weight="2.5"
+        android:layout_alignParentStart="true"
+        android:id="@+id/weather_holder"
+        android:layout_height="0dp"
+        android:paddingBottom="8dp"
+        android:paddingLeft="8dp"
+        android:paddingRight="8dp"
+        android:paddingTop="8dp">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:text="Current Location"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/weather_location"
+                android:layout_below="@+id/date_selection"
+                android:layout_alignParentStart="true" />
+
+            <TextView
+                android:text="location name here"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentTop="true"
+                android:layout_toEndOf="@+id/weather_location"
+                android:layout_marginStart="21dp"
+                android:id="@+id/location" />
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/weather_info"
+            android:layout_below="@+id/weather_location"
+            android:layout_alignParentEnd="true">
+
+            <TextView
+                android:text="Temp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/current_temp" />
+
+            <TextView
+                android:text="FeelsLike"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_marginTop="12dp"
+                android:id="@+id/feels_like" />
+
+            <TextView
+                android:text="windSpeed"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_marginTop="59dp"
+                android:id="@+id/wind_speed" />
+
+            <TextView
+                android:text="WindChill"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_marginTop="28dp"
+                android:id="@+id/wind_chill" />
+
+            <TextView
+                android:text="precipitation %"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/precipitation_chance"
+                android:layout_below="@+id/wind_speed"
+                android:layout_marginTop="29dp" />
+
+            <TextView
+                android:text="precipitation_ amt"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/precipitation_amount"
+                android:layout_below="@+id/precipitation_chance" />
+
+            <TextView
+                android:text="direction"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/wind_direction"
+                android:layout_above="@+id/precipitation_chance"
+                android:layout_toEndOf="@+id/precipitation_amount" />
+
+            <TextView
+                android:text="Humidity"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/humidity"
+                android:layout_alignBaseline="@+id/precipitation_amount"
+                android:layout_alignBottom="@+id/precipitation_amount"
+                android:layout_alignParentEnd="true" />
+
+            <TextView
+                android:text="Sunrise time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/sunrise"
+                android:layout_alignParentBottom="true"
+                android:layout_alignEnd="@+id/wind_direction" />
+
+            <TextView
+                android:text="Sunset time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/sun_set"
+                android:layout_alignParentBottom="true"
+                android:layout_toEndOf="@+id/wind_direction"
+                android:layout_marginStart="29dp" />
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:srcCompat="@drawable/chancetstorms"
+                android:id="@+id/weather_icon"
+                android:layout_alignParentEnd="true" />
+
+        </RelativeLayout>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:id="@+id/date_selection"
+        android:layout_centerHorizontal="true"
+        android:layout_weight=".5">
+
+        <Button
+            android:text="3 Day"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/day_3"
+            android:layout_weight="1" />
+
+        <Button
+            android:text="10 Day"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/day_10"
+            android:layout_weight="1" />
+
+        <Button
+            android:text="Hourly"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/hourly"
+            android:layout_weight="1" />
+
+        <Button
+            android:text="48 Hours"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/hourly_48"
+            android:layout_below="@+id/toolbar"
+            android:layout_toStartOf="@+id/button2"
+            android:layout_weight="1" />
+
+    </LinearLayout>
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/horizontal_recycler"
+        android:scrollbars="vertical"
+        android:layout_width="match_parent"
+        android:layout_weight="1.75"
+        android:layout_height="0dp"
+        android:layout_alignTop="@+id/weather_location"
+        android:layout_toEndOf="@+id/weather_holder"
+        android:paddingLeft="8dp"
+        android:paddingRight="8dp" />
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1.1"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentStart="true"
+        android:id="@+id/bottom_info"
+        android:paddingTop="8dp">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/last_updated">
+
+            <TextView
+                android:text="date here"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/date_update"
+                android:layout_centerVertical="true"
+                android:layout_centerHorizontal="true" />
+
+            <TextView
+                android:text="Day last updated"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/last_updated"
+                android:layout_alignParentTop="true"
+                android:layout_alignParentStart="true" />
+
+        </RelativeLayout>
+
+        <ImageView
+            app:srcCompat="@drawable/wundergroundvertical"
+            android:id="@+id/wunderground_logo"
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentStart="true" />
+
+    </LinearLayout>
+
+</LinearLayout>

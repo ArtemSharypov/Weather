@@ -109,14 +109,6 @@
                 android:layout_alignParentStart="true" />
 
             <TextView
-                android:text="Humidity"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/humidity"
-                android:layout_below="@+id/sunrise"
-                android:layout_alignEnd="@+id/feels_like" />
-
-            <TextView
                 android:text="Sunrise time"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -125,6 +117,15 @@
                 android:layout_alignParentBottom="true"
                 android:layout_toEndOf="@+id/sun_set"
                 android:layout_marginBottom="13dp" />
+
+            <ImageView
+                app:srcCompat="@drawable/chancetstorms"
+                android:id="@+id/weather_icon"
+                android:layout_height="100dp"
+                android:layout_width="100dp"
+                android:layout_marginEnd="16dp"
+                android:layout_above="@+id/precipitation_amount"
+                android:layout_alignEnd="@+id/sunrise" />
 
             <TextView
                 android:text="Sunset time"
@@ -136,14 +137,13 @@
                 android:layout_alignBottom="@+id/sunrise"
                 android:layout_toEndOf="@+id/precipitation_amount" />
 
-            <ImageView
-                app:srcCompat="@drawable/chancetstorms"
-                android:id="@+id/weather_icon"
-                android:layout_height="100dp"
-                android:layout_width="100dp"
-                android:layout_marginEnd="16dp"
-                android:layout_above="@+id/precipitation_amount"
-                android:layout_alignEnd="@+id/sunrise" />
+            <TextView
+                android:text="Humidity"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/humidity"
+                android:layout_alignBottom="@+id/sun_set"
+                android:layout_alignEnd="@+id/feels_like" />
 
         </RelativeLayout>
 

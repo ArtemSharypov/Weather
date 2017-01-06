@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <TextView
+        android:text="Date"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/date" />
+
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:srcCompat="@drawable/clear"
+        android:id="@+id/weather_icon" />
+
+    <TextView
+        android:text="Current Temp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/temperature" />
+
+    <TextView
+        android:text="Feels Like"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/feels_like" />
+
+    <TextView
+        android:text="highOf"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/temp_high" />
+
+    <TextView
+        android:text="lowOf"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/temp_low" />
+
+    <TextView
+        android:text="Wind Info"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/wind_info" />
+
+    <TextView
+        android:text="Humidity"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/humidity" />
+</LinearLayout>

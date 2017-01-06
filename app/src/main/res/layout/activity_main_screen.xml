@@ -28,7 +28,8 @@
         android:paddingBottom="8dp"
         android:paddingLeft="8dp"
         android:paddingRight="8dp"
-        android:paddingTop="8dp">
+        android:paddingTop="8dp"
+        android:layout_marginTop="8dp">
 
         <RelativeLayout
             android:layout_width="match_parent"
@@ -57,7 +58,8 @@
             android:layout_height="match_parent"
             android:id="@+id/weather_info"
             android:layout_below="@+id/weather_location"
-            android:layout_alignParentEnd="true">
+            android:layout_alignParentEnd="true"
+            android:paddingTop="8dp">
 
             <TextView
                 android:text="Temp"
@@ -66,36 +68,12 @@
                 android:id="@+id/current_temp" />
 
             <TextView
-                android:text="FeelsLike"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentStart="true"
-                android:layout_marginTop="12dp"
-                android:id="@+id/feels_like" />
-
-            <TextView
-                android:text="windSpeed"
+                android:text="Wind"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentStart="true"
                 android:layout_marginTop="59dp"
-                android:id="@+id/wind_speed" />
-
-            <TextView
-                android:text="WindChill"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentStart="true"
-                android:layout_marginTop="28dp"
-                android:id="@+id/wind_chill" />
-
-            <TextView
-                android:text="precipitation %"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/precipitation_chance"
-                android:layout_below="@+id/wind_speed"
-                android:layout_marginTop="29dp" />
+                android:id="@+id/wind" />
 
             <TextView
                 android:text="precipitation_ amt"
@@ -105,45 +83,67 @@
                 android:layout_below="@+id/precipitation_chance" />
 
             <TextView
-                android:text="direction"
+                android:text="wind Info"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:id="@+id/wind_direction"
+                android:id="@+id/wind_information"
                 android:layout_above="@+id/precipitation_chance"
-                android:layout_toEndOf="@+id/precipitation_amount" />
+                android:layout_toEndOf="@+id/current_temp" />
+
+            <TextView
+                android:text="FeelsLike"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:id="@+id/feels_like"
+                android:layout_below="@+id/current_temp"
+                android:layout_alignParentStart="true" />
+
+            <TextView
+                android:text="precipitation %"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/precipitation_chance"
+                android:layout_marginTop="16dp"
+                android:layout_below="@+id/wind"
+                android:layout_alignParentStart="true" />
 
             <TextView
                 android:text="Humidity"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/humidity"
-                android:layout_alignBaseline="@+id/precipitation_amount"
-                android:layout_alignBottom="@+id/precipitation_amount"
-                android:layout_alignParentEnd="true" />
+                android:layout_below="@+id/sunrise"
+                android:layout_alignEnd="@+id/feels_like" />
 
             <TextView
                 android:text="Sunrise time"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/sunrise"
+                android:layout_marginStart="14dp"
                 android:layout_alignParentBottom="true"
-                android:layout_alignEnd="@+id/wind_direction" />
+                android:layout_toEndOf="@+id/sun_set"
+                android:layout_marginBottom="13dp" />
 
             <TextView
                 android:text="Sunset time"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/sun_set"
-                android:layout_alignParentBottom="true"
-                android:layout_toEndOf="@+id/wind_direction"
-                android:layout_marginStart="29dp" />
+                android:layout_marginStart="34dp"
+                android:layout_alignBaseline="@+id/sunrise"
+                android:layout_alignBottom="@+id/sunrise"
+                android:layout_toEndOf="@+id/precipitation_amount" />
 
             <ImageView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
                 app:srcCompat="@drawable/chancetstorms"
                 android:id="@+id/weather_icon"
-                android:layout_alignParentEnd="true" />
+                android:layout_height="100dp"
+                android:layout_width="100dp"
+                android:layout_marginEnd="16dp"
+                android:layout_above="@+id/precipitation_amount"
+                android:layout_alignEnd="@+id/sunrise" />
 
         </RelativeLayout>
 
@@ -190,7 +190,7 @@
     </LinearLayout>
 
     <android.support.v7.widget.RecyclerView
-        android:id="@+id/horizontal_recycler"
+        android:id="@+id/forecast"
         android:scrollbars="vertical"
         android:layout_width="match_parent"
         android:layout_weight="1.75"

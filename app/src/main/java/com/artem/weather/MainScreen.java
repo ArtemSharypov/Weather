@@ -42,32 +42,60 @@ public class MainScreen extends AppCompatActivity {
             this.queryType = queryType;
         }
 
+        //Longitude/latitude need a intial geolookup call THEN can do the normal call
         public DataQuerier(long latitude, long longitude, String queryType)
         {
-            INITIAL_CALL = "http://api.wunderground.com/api/" + APIHolder.API_KEY;
+            INITIAL_CALL = "http://api.wunderground.com/api/" + APIHolder.API_KEY + "/";
             this.latitude = latitude;
             this.longitude = longitude;
             this.queryType = queryType;
         }
 
+        //Downloads the JSONObject file in the background
         @Override
         protected String doInBackground(String... strings)
         {
             String weatherData = "";
             URL url;
+            String urlInfo = INITIAL_CALL;
 
             //Tries to connect to the API and get the conditions for that city
             try
             {
+                //Can't download without any internet connection
                 if(isNetworkAvailable())
                 {
-                    url = new URL("http://api.wunderground.com/api/4b02eb9b5cdccbf8/conditions/q/CA/San_Francisco.json");
+                    //Changes the URL based on the query requested
+                    switch(queryType)
+                    {
+                        case "conditions":
+                            urlInfo += "conditions/q" + location + ".json";
+                            break;
+                        case "forecast":
+                            urlInfo += "forecast/q/" + location + ".json";
+                            break;
+                        case "forecast10day":
+                            urlInfo += "forecast/q/" + location + ".json";
+                            break;
+                        case "hourly":
+                            urlInfo += "hourly/q/" + location + ".json";
+                            break;
+                        case "hourly10day":
+                            urlInfo += "forecast/q/" + location + ".json";
+                            break;
+                        case "autocomplete":
+                            urlInfo = "http://autocomplete.wunderground.com/aq?query=" + location + ".json";
+                            break;
+                    }
+
+                    url = new URL(urlInfo);
                     HttpURLConnection connection = (HttpURLConnection) url.openConnection();
                     BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
 
                     StringBuffer jsonString = new StringBuffer();
                     String temp = "";
 
+                    //Read in everything
                     while ((temp = reader.readLine()) != null) {
                         jsonString.append(temp).append("\n");
                     }
@@ -75,7 +103,6 @@ public class MainScreen extends AppCompatActivity {
                     reader.close();
                     weatherData = weatherData + jsonString.toString();
                 }
-
             }
             catch(MalformedURLException error)
             {
@@ -93,7 +120,6 @@ public class MainScreen extends AppCompatActivity {
         protected void onPostExecute(String data) {
             super.onPostExecute(data);
             weatherJSON = data;
-
             populateInfo();
         }
     }
@@ -182,6 +208,7 @@ public class MainScreen extends AppCompatActivity {
         try {
             JSONObject weather = new JSONObject(weatherJSON);
 
+            //Fills in all of the necessary info
             if(weather != null) {
                 JSONParser parser = new JSONParser(this, weather);
                 currentWeather = parser.parseForWeather();

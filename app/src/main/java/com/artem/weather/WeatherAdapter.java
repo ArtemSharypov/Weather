@@ -55,7 +55,7 @@ public class WeatherAdapter extends RecyclerView.Adapter<WeatherAdapter.ViewHold
         LayoutInflater inflater = LayoutInflater.from(pContext);
 
         //Creates a view with the specified layout
-        View weatherView = inflater.inflate(R.layout.recycler_layout, parent, false);
+        View weatherView = inflater.inflate(R.layout.day_layout, parent, false);
 
         ViewHolder viewHolder = new ViewHolder(weatherView);
 

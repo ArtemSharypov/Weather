@@ -2,80 +2,51 @@ package com.artem.weather;
 
 import android.content.Context;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.util.ArrayList;
 
 //might switch to context only constructor, each method just takes a String representing the JSONObject to parse, might be easier
 public class JSONParser {
 
-    private JSONObject weatherToParse;
-    private JSONObject weatherDisplayLoc; //display_location
-    private JSONObject weatherDataSection;
+    private JSONObject mainData;
     private Context context;
 
     public JSONParser(Context context, JSONObject weatherData)
     {
-        this.weatherToParse = weatherData;
+        this.mainData = weatherData;
         this.context = context;
     }
 
-    //sets the section of data to parse next
-    private void splitData()
-    {
-        try
-        {
-            weatherDataSection = weatherToParse.getJSONObject("current_observation");
-            weatherDisplayLoc = weatherDataSection.getJSONObject("display_location");
-        }
-        catch(JSONException e)
-        {
-            e.printStackTrace();
-        }
-    }
-
-    //need to fix it still for forecast / hourly and such, only for current_conditions currently
-    //Parses all info needed into a weather object and returns it
+    //Parses location, date the weather was last updated, temperature, what it feels like out,
+    //humidity, precipitation amount, wind speed / direction / gust, and the icon to display and
+    //the current conditions
     public WeatherInfo parseForWeather()
     {
         WeatherInfo weather = new WeatherInfo(context);
-        String info = "";
-
-        splitData();
 
         try
         {
-            info = weatherDisplayLoc.getString("full");
-            weather.setLocation(info);
+            JSONObject weatherDataSection = mainData.getJSONObject("current_observation"); //current observations[[[[[[[[[[[[[[[[[[[[[[[]
+            JSONObject weatherDisplayLoc = weatherDataSection.getJSONObject("display_location"); //display location
 
-            info = weatherDataSection.getString("observation_time");
-            weather.setDateUpdated(info);
+            weather.setLocation(weatherDisplayLoc.getString("full"));
+            weather.setDateUpdated(weatherDataSection.getString("observation_time"));
 
-            info = weatherDataSection.getString("temp_c");
-            weather.setTemperature(info);
+            weather.setTemperature(weatherDataSection.getString("temp_c"));
+            weather.setFeelsLike(weatherDataSection.getString("feelslike_c"));
 
-            info = weatherDataSection.getString("relative_humidity");
-            weather.setHumidity(info);
+            weather.setHumidity(weatherDataSection.getString("relative_humidity"));
+            weather.setPrecipitationAmount(weatherDataSection.getString("precip_today_in"));
 
-            info = weatherDataSection.getString("wind_dir");
-            weather.setWindDirection(info);
+            weather.setWindDirection(weatherDataSection.getString("wind_dir"));
+            weather.setWindSpeed(weatherDataSection.getString("wind_mph"));
+            weather.setWindGust(weatherDataSection.getString("wind_gust_mph"));
 
-            info = weatherDataSection.getString("wind_mph");
-            weather.setWindSpeed(info);
-
-            info = weatherDataSection.getString("wind_gust_mph");
-            weather.setWindGust(info);
-
-            info = weatherDataSection.getString("feelslike_c");
-            weather.setFeelsLike(info);
-
-            info = weatherDataSection.getString("icon");
-            weather.setIconToUse(info);
-
-            info = weatherDataSection.getString("precip_today_in");
-            weather.setPrecipitationAmount(info);
-
-            //no reliable way to get precip % on just current conditions
-            //sunrise and sunset
+            weather.setIconToUse(weatherDataSection.getString("icon"));
+            weather.setConditions(weatherDataSection.getString("weather"));
         }
         catch(JSONException e)
         {
@@ -85,19 +56,106 @@ public class JSONParser {
         return weather;
     }
 
-    //all will create a WeatherInfo object that gets returned with either a string city name or location
-    //parse conditions
+    //Parses the JSONObject specified for hourly data
+    //Gets temperature, time / day, wind speed and direction, what it feels like, humidity,
+    //icon to display, and the conditions outside currently
+    public ArrayList<WeatherInfo> parseHourly()
+    {
+        ArrayList<WeatherInfo> parsedHourlyData = new ArrayList<WeatherInfo>();
 
-    //for forecast & 10days just need a private method that'll parse a single period / day object and return it
-    //should be a ton easier
-    //parse forecast
+        try
+        {
+            JSONArray hourlyData = mainData.getJSONArray("hourly_forecast");
 
-    //parse forecast 10days
+            //Parses all of the data and adds it to the list
+            for(int i = 0; i < hourlyData.length(); i++)
+            {
+                JSONObject currArrayItem = hourlyData.getJSONObject(i);
+                JSONObject time = currArrayItem.getJSONObject("FCTTIME");
+                JSONObject temperature = currArrayItem.getJSONObject("temp");
+                JSONObject windSpeed = currArrayItem.getJSONObject("wspd");
+                JSONObject windDir = currArrayItem.getJSONObject("wdir");
+                JSONObject feelsLike = currArrayItem.getJSONObject("feelslike");
 
-    //for hourly could just make another private method that parses the hour for the information needed and return it
-    //should work for any hourly conditions
-    //parse hourly
+                WeatherInfo weather = new WeatherInfo(context);
 
-    //parse hourly 10days (only using 48 hours though)
+                weather.setTemperature(temperature.getString("metric"));
+                weather.setFeelsLike(feelsLike.getString("metric"));
 
+                weather.setWindSpeed(windSpeed.getString("metric"));
+                weather.setWindDirection(windDir.getString("dir"));
+
+                weather.setHumidity(currArrayItem.getString("humidity"));
+
+                weather.setIconToUse(currArrayItem.getString("icon"));
+                weather.setConditions(currArrayItem.getString("condition"));
+
+                String timeStamp = time.getString("weekend_name_abbrev") + "\n" +
+                        time.getString("civil");
+                weather.setTimeOfWeather(timeStamp);
+
+                parsedHourlyData.add(weather);
+            }
+        }
+        catch(JSONException error)
+        {
+            error.printStackTrace();
+        }
+
+        return parsedHourlyData;
+    }
+
+    //Parses JSONObject for the daily data
+    //Gets low / high temps, precipitation amount & chance, humidity, icon to display, conditions
+    //that are related to the icon, wind speed & direction, and the date for that weather
+    public ArrayList<WeatherInfo> parseDaily()
+    {
+        ArrayList<WeatherInfo> parsedDailyData = new ArrayList<WeatherInfo>();
+
+        //Tries to parse all the date in the object
+        try
+        {
+            JSONObject forecast = mainData.getJSONObject("forecast");
+            JSONObject simpleForecast = forecast.getJSONObject("simpleforecast");
+            JSONArray dayData = simpleForecast.getJSONArray("forecastday");
+
+            for(int i = 0; i < dayData.length(); i++)
+            {
+                JSONObject currItem = dayData.getJSONObject(i);
+                JSONObject date = currItem.getJSONObject("date");
+                JSONObject high = currItem.getJSONObject("high");
+                JSONObject low = currItem.getJSONObject("low");
+                JSONObject rain = currItem.getJSONObject("qpf_allday"); //might need one for snow and switch off depending on the weather?
+                JSONObject wind = currItem.getJSONObject("avewind");
+
+                WeatherInfo weather = new WeatherInfo(context);
+
+                weather.setHighOfTemp(high.getString("celsius"));
+                weather.setLowOfTemp(low.getString("celsius"));
+
+                weather.setPrecipitationAmount(rain.getString("in"));
+                weather.setPrecipitationChance(currItem.getString("pop"));
+
+                weather.setHumidity(currItem.getString("avehumidity"));
+
+                weather.setIconToUse(currItem.getString("icon"));
+                weather.setConditions(currItem.getString("conditions"));
+
+                weather.setWindSpeed(wind.getString("mph"));
+                weather.setWindDirection(wind.getString("dir"));
+
+                String timeStamp = date.getString("weekday_short") + "\n" +
+                        date.getString("monthname") + " " + date.getString("day");
+                weather.setTimeOfWeather(timeStamp);
+
+                parsedDailyData.add(weather);
+            }
+        }
+        catch(JSONException error)
+        {
+            error.printStackTrace();
+        }
+
+        return parsedDailyData;
+    }
 }

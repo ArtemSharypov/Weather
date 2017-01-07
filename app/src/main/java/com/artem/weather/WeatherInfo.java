@@ -22,6 +22,8 @@ public class WeatherInfo {
     private String dateUpdated;
     private String lowOfTemp;
     private String highOfTemp;
+    private String conditions;
+    private String timeOfWeather;
 
     public WeatherInfo(Context context)
     {
@@ -255,5 +257,21 @@ public class WeatherInfo {
 
     public void setHighOfTemp(String highOfTemp) {
         this.highOfTemp = highOfTemp;
+    }
+
+    public String getConditions() {
+        return conditions;
+    }
+
+    public void setConditions(String conditions) {
+        this.conditions = conditions;
+    }
+
+    public String getTimeOfWeather() {
+        return timeOfWeather;
+    }
+
+    public void setTimeOfWeather(String timeOfWeather) {
+        this.timeOfWeather = timeOfWeather;
     }
 }

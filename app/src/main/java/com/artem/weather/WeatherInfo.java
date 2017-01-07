@@ -23,11 +23,9 @@ public class WeatherInfo {
     private String lowOfTemp;
     private String highOfTemp;
 
-    public WeatherInfo(Context context, String location, String dateUpdated)
+    public WeatherInfo(Context context)
     {
         this.context = context;
-        this.location = location;
-        this.dateUpdated = dateUpdated;
     }
 
     public String getLocation() {

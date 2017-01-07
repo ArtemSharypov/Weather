@@ -39,8 +39,7 @@
                 android:text="Current Location"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:id="@+id/weather_location"
-                android:layout_below="@+id/date_selection"
+                android:id="@+id/location_text"
                 android:layout_alignParentStart="true" />
 
             <TextView
@@ -48,7 +47,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentTop="true"
-                android:layout_toEndOf="@+id/weather_location"
+                android:layout_toEndOf="@+id/location_text"
                 android:layout_marginStart="21dp"
                 android:id="@+id/location" />
         </RelativeLayout>
@@ -57,7 +56,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:id="@+id/weather_info"
-            android:layout_below="@+id/weather_location"
+            android:layout_below="@+id/location_text"
             android:layout_alignParentEnd="true"
             android:paddingTop="8dp">
 
@@ -73,22 +72,7 @@
                 android:layout_height="wrap_content"
                 android:layout_alignParentStart="true"
                 android:layout_marginTop="59dp"
-                android:id="@+id/wind" />
-
-            <TextView
-                android:text="precipitation_ amt"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/precipitation_amount"
-                android:layout_below="@+id/precipitation_chance" />
-
-            <TextView
-                android:text="wind Info"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/wind_information"
-                android:layout_above="@+id/precipitation_chance"
-                android:layout_toEndOf="@+id/current_temp" />
+                android:id="@+id/wind_info" />
 
             <TextView
                 android:text="FeelsLike"
@@ -100,50 +84,60 @@
                 android:layout_alignParentStart="true" />
 
             <TextView
-                android:text="precipitation %"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/precipitation_chance"
-                android:layout_marginTop="16dp"
-                android:layout_below="@+id/wind"
-                android:layout_alignParentStart="true" />
-
-            <TextView
                 android:text="Sunrise time"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/sunrise"
                 android:layout_marginStart="14dp"
                 android:layout_alignParentBottom="true"
-                android:layout_toEndOf="@+id/sun_set"
+                android:layout_toEndOf="@+id/sunset"
                 android:layout_marginBottom="13dp" />
+
+            <TextView
+                android:text="Sunset time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/sunset"
+                android:layout_marginStart="34dp"
+                android:layout_alignBaseline="@+id/sunrise"
+                android:layout_alignBottom="@+id/sunrise"
+                android:layout_toEndOf="@+id/precipitation_amount" />
 
             <ImageView
                 app:srcCompat="@drawable/chancetstorms"
                 android:id="@+id/weather_icon"
                 android:layout_height="100dp"
                 android:layout_width="100dp"
-                android:layout_marginEnd="16dp"
+                android:layout_marginEnd="17dp"
                 android:layout_above="@+id/precipitation_amount"
-                android:layout_alignEnd="@+id/sunrise" />
+                android:layout_alignParentEnd="true" />
 
             <TextView
-                android:text="Sunset time"
+                android:text="precipitation_ amt"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:id="@+id/sun_set"
-                android:layout_marginStart="34dp"
-                android:layout_alignBaseline="@+id/sunrise"
-                android:layout_alignBottom="@+id/sunrise"
-                android:layout_toEndOf="@+id/precipitation_amount" />
+                android:id="@+id/precipitation_amount"
+                android:layout_above="@+id/humidity"
+                android:layout_alignParentStart="true"
+                android:layout_marginBottom="12dp" />
+
+            <TextView
+                android:text="precipitation %"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/precipitation_chance"
+                android:layout_above="@+id/precipitation_amount"
+                android:layout_alignParentStart="true" />
 
             <TextView
                 android:text="Humidity"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/humidity"
-                android:layout_alignBottom="@+id/sun_set"
-                android:layout_alignEnd="@+id/feels_like" />
+                android:layout_alignBottom="@+id/sunset"
+                android:layout_alignParentStart="true"
+                android:layout_marginBottom="9dp" />
+
 
         </RelativeLayout>
 
@@ -195,7 +189,7 @@
         android:layout_width="match_parent"
         android:layout_weight="1.75"
         android:layout_height="0dp"
-        android:layout_alignTop="@+id/weather_location"
+        android:layout_alignTop="@+id/location_text"
         android:layout_toEndOf="@+id/weather_holder"
         android:paddingLeft="8dp"
         android:paddingRight="8dp" />
@@ -212,22 +206,13 @@
 
         <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/last_updated">
+            android:layout_height="wrap_content">
 
             <TextView
                 android:text="date here"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/date_update"
-                android:layout_centerVertical="true"
-                android:layout_centerHorizontal="true" />
-
-            <TextView
-                android:text="Day last updated"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/last_updated"
                 android:layout_alignParentTop="true"
                 android:layout_alignParentStart="true" />
 

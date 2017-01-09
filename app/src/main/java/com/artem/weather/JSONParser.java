@@ -8,22 +8,19 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 
-//might switch to context only constructor, each method just takes a String representing the JSONObject to parse, might be easier
 public class JSONParser {
 
-    private JSONObject mainData;
     private Context context;
 
-    public JSONParser(Context context, JSONObject weatherData)
+    public JSONParser(Context context)
     {
-        this.mainData = weatherData;
         this.context = context;
     }
 
     //Parses location, date the weather was last updated, temperature, what it feels like out,
     //humidity, precipitation amount, wind speed / direction / gust, and the icon to display and
     //the current conditions
-    public WeatherInfo parseForWeather()
+    public WeatherInfo parseForWeather(JSONObject mainData)
     {
         WeatherInfo weather = new WeatherInfo(context);
 
@@ -59,7 +56,7 @@ public class JSONParser {
     //Parses the JSONObject specified for hourly data
     //Gets temperature, time / day, wind speed and direction, what it feels like, humidity,
     //icon to display, and the conditions outside currently
-    public ArrayList<WeatherInfo> parseHourly()
+    public ArrayList<WeatherInfo> parseHourly(JSONObject mainData)
     {
         ArrayList<WeatherInfo> parsedHourlyData = new ArrayList<WeatherInfo>();
 
@@ -90,8 +87,7 @@ public class JSONParser {
                 weather.setIconToUse(currArrayItem.getString("icon"));
                 weather.setConditions(currArrayItem.getString("condition"));
 
-                String timeStamp = time.getString("weekend_name_abbrev") + "\n" +
-                        time.getString("civil");
+                String timeStamp = time.getString("weekday_name_abbrev") + " " + time.getString("civil");
                 weather.setTimeOfWeather(timeStamp);
 
                 parsedHourlyData.add(weather);
@@ -108,7 +104,7 @@ public class JSONParser {
     //Parses JSONObject for the daily data
     //Gets low / high temps, precipitation amount & chance, humidity, icon to display, conditions
     //that are related to the icon, wind speed & direction, and the date for that weather
-    public ArrayList<WeatherInfo> parseDaily()
+    public ArrayList<WeatherInfo> parseDaily(JSONObject mainData)
     {
         ArrayList<WeatherInfo> parsedDailyData = new ArrayList<WeatherInfo>();
 
@@ -144,8 +140,8 @@ public class JSONParser {
                 weather.setWindSpeed(wind.getString("mph"));
                 weather.setWindDirection(wind.getString("dir"));
 
-                String timeStamp = date.getString("weekday_short") + "\n" +
-                        date.getString("monthname") + " " + date.getString("day");
+                String timeStamp = date.getString("weekday_short") + " " + date.getString("monthname")
+                        + " " + date.getString("day");
                 weather.setTimeOfWeather(timeStamp);
 
                 parsedDailyData.add(weather);

@@ -1,54 +1,87 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:orientation="vertical" android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:orientation="vertical" android:layout_width="200dp"
+    android:layout_height="200dp">
 
     <TextView
         android:text="Date"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/date" />
+        android:id="@+id/date"
+        android:layout_marginLeft="8dp" />
 
-    <ImageView
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:srcCompat="@drawable/clear"
-        android:id="@+id/weather_icon" />
+        android:layout_height="match_parent"
+        android:layout_marginLeft="8dp">
 
-    <TextView
-        android:text="Current Temp"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/temperature" />
+        <TextView
+            android:text="conditions"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/day_conditions"
+            android:layout_below="@+id/weather_icon"
+            android:layout_alignStart="@+id/weather_icon"
+            android:layout_marginTop="12dp" />
 
-    <TextView
-        android:text="Feels Like"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/feels_like" />
+        <TextView
+            android:text="Current Temp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/temperature"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentStart="true"
+            android:layout_marginTop="16dp" />
 
-    <TextView
-        android:text="highOf"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/temp_high" />
+        <TextView
+            android:text="Feels Like"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/feels_like"
+            android:layout_below="@+id/temperature"
+            android:layout_alignParentStart="true" />
 
-    <TextView
-        android:text="lowOf"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/temp_low" />
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:srcCompat="@drawable/clear"
+            android:id="@+id/weather_icon"
+            android:layout_marginEnd="21dp"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentEnd="true" />
 
-    <TextView
-        android:text="Wind Info"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/wind_info" />
+        <TextView
+            android:text="highOf"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/temp_high"
+            android:layout_below="@+id/weather_icon"
+            android:layout_alignParentStart="true" />
 
-    <TextView
-        android:text="Humidity"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/humidity" />
+        <TextView
+            android:text="lowOf"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/temp_low"
+            android:layout_below="@+id/temp_high"
+            android:layout_alignParentStart="true" />
+
+        <TextView
+            android:text="Wind Info"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/wind_info"
+            android:layout_below="@+id/temp_low"
+            android:layout_alignEnd="@+id/feels_like" />
+
+        <TextView
+            android:text="Humidity"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/humidity"
+            android:layout_below="@+id/wind_info"
+            android:layout_alignStart="@+id/wind_info" />
+    </RelativeLayout>
+
 </LinearLayout>

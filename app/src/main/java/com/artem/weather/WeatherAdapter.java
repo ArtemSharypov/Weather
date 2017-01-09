@@ -22,6 +22,7 @@ public class WeatherAdapter extends RecyclerView.Adapter<WeatherAdapter.ViewHold
         public TextView lowOfTemp;
         public TextView windInfo;
         public TextView humidity;
+        public TextView currConditions;
         public ImageView icon;
 
         public ViewHolder(View itemView) {
@@ -35,6 +36,7 @@ public class WeatherAdapter extends RecyclerView.Adapter<WeatherAdapter.ViewHold
             windInfo = (TextView) itemView.findViewById(R.id.wind_info);
             humidity = (TextView) itemView.findViewById(R.id.humidity);
             icon = (ImageView) itemView.findViewById(R.id.weather_icon);
+            currConditions = (TextView) itemView.findViewById(R.id.day_conditions);
         }
     }
 
@@ -68,14 +70,17 @@ public class WeatherAdapter extends RecyclerView.Adapter<WeatherAdapter.ViewHold
     {
         WeatherInfo weather = weatherList.get(position);
 
+        //need to move high of and such into the weatherInfo itself
         //Sets all of the information in the view
-        holder.date.setText(weather.getDateUpdated());
-        holder.currentTemp.setText(weather.getTemperature());
-        holder.lowOfTemp.setText(weather.getLowOfTemp());
-        holder.highOfTemp.setText(weather.getHighOfTemp());
-        holder.windInfo.setText(weather.getWindSpeed() + " " + weather.getWindDirection());
-        holder.humidity.setText(weather.getHumidity());
+        holder.date.setText(weather.getTimeOfWeather());
+        holder.currentTemp.setText("Current Temp: " + weather.getTemperature() + "°C");
+        holder.lowOfTemp.setText("Low Of: " + weather.getLowOfTemp() + "°C");
+        holder.highOfTemp.setText("High Of: " +weather.getHighOfTemp() + "°C");
+        holder.windInfo.setText("Wind: " + weather.getWindSpeed() + " " +
+                weather.getWindDirection() + "mph ");
+        holder.humidity.setText("Humidity: " + weather.getHumidity());
         holder.icon.setImageBitmap(weather.getIconToUse());
+        holder.currConditions.setText(weather.getConditions());
     }
 
     @Override

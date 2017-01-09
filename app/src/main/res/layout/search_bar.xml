@@ -7,5 +7,7 @@
         android:layout_width="150dp"
         android:layout_height="50dp"
         android:id="@+id/search"
-        android:hint="Search" />
+        android:hint="Search">
+        <requestFocus />
+    </AutoCompleteTextView>
 </LinearLayout>

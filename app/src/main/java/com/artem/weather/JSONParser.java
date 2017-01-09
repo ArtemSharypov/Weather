@@ -154,11 +154,4 @@ public class JSONParser {
 
         return parsedDailyData;
     }
-
-    public ArrayList<String> parseAutoComplete(JSONObject autoCompleteData)
-    {
-        ArrayList<String> data = new ArrayList<String>();
-
-        return data;
-    }
 }

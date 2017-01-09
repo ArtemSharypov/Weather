@@ -10,11 +10,12 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -29,31 +30,32 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 
-public class MainScreen extends AppCompatActivity {
+public class MainScreen extends AppCompatActivity{
 
-    private class DataQuerier extends AsyncTask<String, Void, String>
+    //Queries WunderGround API for weather
+    private class WGQuerier extends AsyncTask<String, Void, String>
     {
         private String city;
         private String country;
         private String queryType;
         private long latitude;
         private long longitude;
-        private final String INITIAL_CALL;
+        private final String INITIAL_CALL
+                = "http://api.wunderground.com/api/" + APIHolder.WG_API_KEY + "/";
 
-        public DataQuerier(String city, String country, String queryType)
+        public WGQuerier(String city, String country, String queryType)
         {
-            INITIAL_CALL = "http://api.wunderground.com/api/" + APIHolder.API_KEY + "/";
             this.city = city;
             this.country = country;
             this.queryType = queryType;
         }
 
         //Longitude/latitude need a initial geolookup call THEN can do the normal call
-        public DataQuerier(long latitude, long longitude, String queryType)
+        public WGQuerier(long latitude, long longitude, String queryType)
         {
-            INITIAL_CALL = "http://api.wunderground.com/api/" + APIHolder.API_KEY + "/";
             this.latitude = latitude;
             this.longitude = longitude;
             this.queryType = queryType;
@@ -144,6 +146,72 @@ public class MainScreen extends AppCompatActivity {
         }
     }
 
+    //Used to query Google Place API for autocomplete locations
+    private class GooglePlaceQuerier extends AsyncTask<String, Void, String>
+    {
+        private final String INITIAL_CALL ="https://maps.googleapis.com/maps/api/place";
+        private final String TYPE_AUTO_COMPLETE = "/autocomplete";
+        private final String FILE_TYPE = "/json";
+
+        private String input;
+
+        public GooglePlaceQuerier(String input)
+        {
+            this.input = input;
+        }
+
+        @Override
+        protected String doInBackground(String... strings) {
+            URL url;
+            String urlInfo;
+            String locationData = "";
+
+            try
+            {
+                //Can't download without any internet connection
+                if(isNetworkAvailable())
+                {
+                    urlInfo =  INITIAL_CALL + TYPE_AUTO_COMPLETE + FILE_TYPE;
+                    urlInfo += "?key=" + APIHolder.GOOGLE_API_KEY;
+                    urlInfo += "&types=(cities)"; //need a way to better filter for cities / country
+                    urlInfo += "&input=" + URLEncoder.encode(input, "utf8");
+
+                    url = new URL(urlInfo);
+                    HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+
+                    StringBuffer jsonString = new StringBuffer();
+                    String temp = "";
+
+                    //Read in everything
+                    while ((temp = reader.readLine()) != null) {
+                        jsonString.append(temp).append("\n");
+                    }
+
+                    locationData = jsonString.toString();
+                    reader.close();
+                }
+            }
+            catch(MalformedURLException error)
+            {
+                error.printStackTrace();
+            }
+            catch(IOException error)
+            {
+                error.printStackTrace();
+            }
+
+            return locationData;
+        }
+
+        @Override
+        protected void onPostExecute(String autoCompleteJSON) {
+            super.onPostExecute(autoCompleteJSON);
+            //autoCompleteAdapter.getFilter().filter(autoCompleteJSON);
+            System.out.println(autoCompleteJSON);
+        }
+    }
+
     private RecyclerView recyclerView;
     private TextView location;
     private TextView temperature;
@@ -164,14 +232,6 @@ public class MainScreen extends AppCompatActivity {
     private Button hourly10Days;
     private AutoCompleteTextView autoCompleteText;
 
-    private WeatherAdapter adapter;
-    private ArrayList<WeatherInfo> weatherList;
-    private ArrayList<String> locationList;
-    private WeatherInfo currentWeather;
-
-    private String currCity = "Winnipeg";
-    private String currCountry = "Canada";
-
     private final int FORECAST_3DAY_MODE = 1;
     private final int FORECAST_10DAY_MODE = 2;
     private final int HOURLY_2DAY_MODE = 3;
@@ -184,6 +244,15 @@ public class MainScreen extends AppCompatActivity {
     private final String HOURLY_10DAY = "hourly10day";
 
     private final String AUTO_COMPLETE = "autocomplete";
+
+    private AutoCompleteArrayAdapter autoCompleteAdapter;
+    private WeatherAdapter adapter;
+    private ArrayList<WeatherInfo> weatherList;
+    private ArrayList<String> locationList;
+    private WeatherInfo currentWeather;
+
+    private String currCity = "Winnipeg";
+    private String currCountry = "Canada";
 
     private int current_mode; //Data thats displayed in the recyclerview
 
@@ -228,13 +297,14 @@ public class MainScreen extends AppCompatActivity {
 
         current_mode = FORECAST_3DAY_MODE; //keep track of the current mode
 
+        //Changes mode based on the current display in the forecasts
         forecast3Day.setOnClickListener(new View.OnClickListener()
         {
             @Override
             public void onClick(View view) {
                 if(current_mode != FORECAST_3DAY_MODE)
                 {
-                    new DataQuerier(currCity, currCountry, FORECAST).execute();
+                    new WGQuerier(currCity, currCountry, FORECAST).execute();
                     current_mode = FORECAST_3DAY_MODE;
                 }
             }
@@ -246,7 +316,7 @@ public class MainScreen extends AppCompatActivity {
             public void onClick(View view) {
                 if(current_mode != FORECAST_10DAY_MODE)
                 {
-                    new DataQuerier(currCity, currCountry, FORECAST_10DAY).execute();
+                    new WGQuerier(currCity, currCountry, FORECAST_10DAY).execute();
                     current_mode = FORECAST_10DAY_MODE;
                 }
             }
@@ -258,7 +328,7 @@ public class MainScreen extends AppCompatActivity {
             public void onClick(View view) {
                 if(current_mode != HOURLY_2DAY_MODE)
                 {
-                    new DataQuerier(currCity, currCountry, HOURLY).execute();
+                    new WGQuerier(currCity, currCountry, HOURLY).execute();
                     current_mode = HOURLY_2DAY_MODE;
                 }
             }
@@ -270,16 +340,13 @@ public class MainScreen extends AppCompatActivity {
             public void onClick(View view) {
                 if(current_mode != HOURLY_10DAY_MODE)
                 {
-                    new DataQuerier(currCity, currCountry, HOURLY_10DAY).execute();
+                    new WGQuerier(currCity, currCountry, HOURLY_10DAY).execute();
                     current_mode = HOURLY_10DAY_MODE;
                 }
             }
         });
 
-        //will change depending on the city, just a default location for now.
-        //second query changes based on preferences, forecast will be default
-        new DataQuerier(currCity, currCountry, CONDITIONS).execute();
-        new DataQuerier(currCity, currCountry, FORECAST).execute(); //will change depending on preferences / options
+        defaultDisplay();
     }
 
     //Creates the toolbar
@@ -289,10 +356,26 @@ public class MainScreen extends AppCompatActivity {
         getMenuInflater().inflate(R.menu.main, menu);
 
         View view = menu.findItem(R.id.search_auto).getActionView();
-        autoCompleteText = (AutoCompleteTextView) view.findViewById(R.id.search);
 
-        ArrayAdapter<String> autoCompleteAdapter
-                = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, locationList);
+        autoCompleteText = (AutoCompleteTextView) view.findViewById(R.id.search);
+        autoCompleteText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                new GooglePlaceQuerier(charSequence.toString()).execute();
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+
+            }
+        });
+
+        autoCompleteAdapter = new AutoCompleteArrayAdapter(this, android.R.layout.simple_list_item_1, locationList);
         autoCompleteText.setAdapter(autoCompleteAdapter);
 
         //Sets the texts in it, allowing the search
@@ -305,6 +388,7 @@ public class MainScreen extends AppCompatActivity {
             }
         });
 
+
         return super.onCreateOptionsMenu(menu);
     }
 
@@ -316,16 +400,6 @@ public class MainScreen extends AppCompatActivity {
         switch(item.getItemId())
         {
             case R.id.search_button:
-                //Format is City, Country
-                String[] location = autoCompleteText.getText().toString().split(",");
-                location[0].trim();
-                location[1].trim();
-
-                currCity = location[0];
-                currCountry = location[1];
-
-                new DataQuerier(currCity, currCountry, CONDITIONS);
-                new DataQuerier(currCity, currCountry, FORECAST);
 
                 break;
             case R.id.options_button:
@@ -334,9 +408,16 @@ public class MainScreen extends AppCompatActivity {
                 break;
         }
 
-        //other place but there needs to be onclick for the pop ups for the auto complete to query based on the selection
-
         return result;
+    }
+
+    //Displays the current conditions & forecast
+    private void defaultDisplay()
+    {
+        //will change depending on the city, just a default location for now.
+        //second query changes based on preferences, forecast will be default
+        new WGQuerier(currCity, currCountry, CONDITIONS).execute();
+        new WGQuerier(currCity, currCountry, FORECAST).execute(); //will change depending on preferences / options
     }
 
     //checks if the phones connected to the internet
@@ -385,7 +466,6 @@ public class MainScreen extends AppCompatActivity {
         }
     }
 
-    //might just split it into 2 methods, have to check it either way
     private void populateDailyHourly(String weatherJSON, String parseType)
     {
         try
@@ -414,6 +494,4 @@ public class MainScreen extends AppCompatActivity {
             error.printStackTrace();
         }
     }
-
-    //on click for buttons, buttons change the content in the recyclerView
 }

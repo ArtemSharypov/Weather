@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/back_button"
+        android:actionViewClass="android.support.v7.widget.SearchView"
+        android:title="Back"
+        app:showAsAction="always"
+        />
+    <item
+        android:id="@+id/save_button"
+        android:actionViewClass="android.support.v7.widget.SearchView"
+        android:title="save"
+        app:showAsAction="always"
+        />
+
+</menu>

@@ -32,15 +32,15 @@ public class JSONParser {
             weather.setLocation(weatherDisplayLoc.getString("full"));
             weather.setDateUpdated(weatherDataSection.getString("observation_time"));
 
-            weather.setTemperature(weatherDataSection.getString("temp_c"));
-            weather.setFeelsLike(weatherDataSection.getString("feelslike_c"));
+            weather.setTemperature("Curr Temp: " + weatherDataSection.getString("temp_c") + "°C");
+            weather.setFeelsLike("Feels Like: " + weatherDataSection.getString("feelslike_c")+ "°C");
 
-            weather.setHumidity(weatherDataSection.getString("relative_humidity"));
-            weather.setPrecipitationAmount(weatherDataSection.getString("precip_today_in"));
+            weather.setHumidity("Humidity: " + weatherDataSection.getString("relative_humidity"));
+            weather.setPrecipitationAmount("Snow/Rain " + weatherDataSection.getString("precip_today_metric") + "mm");
 
+            weather.setWindSpeed("Wind: " + weatherDataSection.getString("wind_mph") + "mph ");
             weather.setWindDirection(weatherDataSection.getString("wind_dir"));
-            weather.setWindSpeed(weatherDataSection.getString("wind_mph"));
-            weather.setWindGust(weatherDataSection.getString("wind_gust_mph"));
+            weather.setWindGust("Gusts of " + weatherDataSection.getString("wind_gust_mph") + "mph");
 
             weather.setIconToUse(weatherDataSection.getString("icon"));
             weather.setConditions(weatherDataSection.getString("weather"));
@@ -76,13 +76,13 @@ public class JSONParser {
 
                 WeatherInfo weather = new WeatherInfo(context);
 
-                weather.setTemperature(temperature.getString("metric"));
-                weather.setFeelsLike(feelsLike.getString("metric"));
+                weather.setTemperature("Curr Temp: " + temperature.getString("metric") + "°C");
+                weather.setFeelsLike("Feels Like: " + feelsLike.getString("metric")+ "°C");
 
-                weather.setWindSpeed(windSpeed.getString("metric"));
+                weather.setWindSpeed("Wind: " + windSpeed.getString("metric") + "mph ");
                 weather.setWindDirection(windDir.getString("dir"));
 
-                weather.setHumidity(currArrayItem.getString("humidity"));
+                weather.setHumidity("Humidity: " + currArrayItem.getString("humidity"));
 
                 weather.setIconToUse(currArrayItem.getString("icon"));
                 weather.setConditions(currArrayItem.getString("condition"));
@@ -126,19 +126,19 @@ public class JSONParser {
 
                 WeatherInfo weather = new WeatherInfo(context);
 
-                weather.setHighOfTemp(high.getString("celsius"));
-                weather.setLowOfTemp(low.getString("celsius"));
+                weather.setHighOfTemp("High Of: " + high.getString("celsius") + "°C");
+                weather.setLowOfTemp("Low Of: " + low.getString("celsius") + "°C");
 
-                weather.setPrecipitationAmount(rain.getString("in"));
-                weather.setPrecipitationChance(currItem.getString("pop"));
+                weather.setPrecipitationAmount("Snow/Rain" + rain.getString("mm")+ "mm");
+                weather.setPrecipitationChance("Precipitation %" + currItem.getString("pop") + "%");
 
-                weather.setHumidity(currItem.getString("avehumidity"));
+                weather.setHumidity("Humidity: " + currItem.getString("avehumidity"));
 
                 weather.setIconToUse(currItem.getString("icon"));
                 weather.setConditions(currItem.getString("conditions"));
 
-                weather.setWindSpeed(wind.getString("mph"));
                 weather.setWindDirection(wind.getString("dir"));
+                weather.setWindSpeed("Wind: " + wind.getString("mph") + "mph ");
 
                 String timeStamp = date.getString("weekday_short") + " " + date.getString("monthname")
                         + " " + date.getString("day");
@@ -153,5 +153,12 @@ public class JSONParser {
         }
 
         return parsedDailyData;
+    }
+
+    public ArrayList<String> parseAutoComplete(JSONObject autoCompleteData)
+    {
+        ArrayList<String> data = new ArrayList<String>();
+
+        return data;
     }
 }

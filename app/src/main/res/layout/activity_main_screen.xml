@@ -70,9 +70,9 @@
                 android:text="Wind"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_alignParentStart="true"
                 android:layout_marginTop="59dp"
-                android:id="@+id/wind_info" />
+                android:id="@+id/wind_info"
+                android:layout_alignParentStart="true" />
 
             <TextView
                 android:text="FeelsLike"
@@ -103,24 +103,6 @@
                 android:layout_alignBottom="@+id/sunrise"
                 android:layout_toEndOf="@+id/precipitation_amount" />
 
-            <ImageView
-                app:srcCompat="@drawable/chancetstorms"
-                android:id="@+id/weather_icon"
-                android:layout_height="100dp"
-                android:layout_width="100dp"
-                android:layout_marginEnd="17dp"
-                android:layout_above="@+id/precipitation_amount"
-                android:layout_alignParentEnd="true" />
-
-            <TextView
-                android:text="precipitation_ amt"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/precipitation_amount"
-                android:layout_above="@+id/humidity"
-                android:layout_alignParentStart="true"
-                android:layout_marginBottom="12dp" />
-
             <TextView
                 android:text="precipitation %"
                 android:layout_width="wrap_content"
@@ -138,6 +120,30 @@
                 android:layout_alignParentStart="true"
                 android:layout_marginBottom="9dp" />
 
+            <TextView
+                android:text="precipitation_ amt"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/precipitation_amount"
+                android:layout_above="@+id/humidity"
+                android:layout_alignParentStart="true" />
+
+            <ImageView
+                app:srcCompat="@drawable/chancetstorms"
+                android:id="@+id/weather_icon"
+                android:layout_height="100dp"
+                android:layout_width="100dp"
+                android:layout_alignParentTop="true"
+                android:layout_toEndOf="@+id/sunset" />
+
+            <TextView
+                android:text="conditions"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/curr_conditions"
+                android:layout_below="@+id/weather_icon"
+                android:layout_alignStart="@+id/sunrise" />
+
 
         </RelativeLayout>
 
@@ -149,37 +155,37 @@
         android:layout_height="0dp"
         android:id="@+id/date_selection"
         android:layout_centerHorizontal="true"
-        android:layout_weight=".5">
+        android:layout_weight=".6">
 
         <Button
             android:text="3 Day"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/day_3"
+            android:id="@+id/forecast_3day"
             android:layout_weight="1" />
 
         <Button
-            android:text="10 Day"
+            android:text="10  Day"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/day_10"
+            android:id="@+id/forcast_10day"
+            android:layout_weight="1" />
+
+        <Button
+            android:text="48 hours"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/hourly_2day"
             android:layout_weight="1" />
 
         <Button
             android:text="Hourly"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/hourly"
-            android:layout_weight="1" />
-
-        <Button
-            android:text="48 Hours"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/hourly_48"
+            android:id="@+id/hourly_10day"
             android:layout_below="@+id/toolbar"
             android:layout_toStartOf="@+id/button2"
-            android:layout_weight="1" />
+            android:layout_weight="1.2" />
 
     </LinearLayout>
 
@@ -187,12 +193,10 @@
         android:id="@+id/forecast"
         android:scrollbars="vertical"
         android:layout_width="match_parent"
-        android:layout_weight="1.75"
+        android:layout_weight="1.9"
         android:layout_height="0dp"
         android:layout_alignTop="@+id/location_text"
-        android:layout_toEndOf="@+id/weather_holder"
-        android:paddingLeft="8dp"
-        android:paddingRight="8dp" />
+        android:layout_toEndOf="@+id/weather_holder" />
 
     <LinearLayout
         android:orientation="vertical"

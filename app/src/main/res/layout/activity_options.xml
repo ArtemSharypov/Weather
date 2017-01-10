@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
 
     <android.support.v7.widget.Toolbar
         android:layout_width="match_parent"
@@ -10,4 +11,162 @@
         android:theme="?attr/actionBarTheme"
         android:minHeight="?attr/actionBarSize"
         android:id="@+id/options_toolbar" />
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_below="@+id/options_toolbar"
+        android:layout_alignParentStart="true"
+        android:layout_marginTop="8dp"
+        android:layout_weight="5"
+        android:layout_height="0dp"
+        android:layout_marginBottom="8dp">
+
+        <TextView
+            android:text="Time Settings"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/time_settings" />
+
+        <RadioGroup
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/time_radio_group"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentStart="true"
+            android:checkedButton="@+id/format_12hour_button">
+
+            <RadioButton
+                android:text="12 Hour Format"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/format_12hour_button"
+                android:layout_weight="1"
+                android:layout_marginBottom="8dp" />
+
+            <RadioButton
+                android:text="24 Hour Format"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/format_24hour_button"
+                android:layout_weight="1" />
+        </RadioGroup>
+    </LinearLayout>
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentStart="true"
+        android:layout_weight="5"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp">
+
+        <TextView
+            android:text="Precipitation Settings"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/precipitation_settings" />
+
+        <RadioGroup
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/precipitation_radio_group"
+            android:checkedButton="@+id/mm_button">
+
+            <RadioButton
+                android:text="Milimetre"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/mm_button"
+                android:layout_weight="1" />
+
+            <RadioButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/inches_button"
+                android:layout_weight="1"
+                android:text="Inches" />
+        </RadioGroup>
+    </LinearLayout>
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:id="@+id/temperature"
+        android:layout_alignParentStart="true"
+        android:layout_weight="5"
+        android:layout_marginBottom="8dp"
+        android:layout_marginTop="8dp">
+
+        <TextView
+            android:text="Temperature Settings"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/temperature_setting" />
+
+        <RadioGroup
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/temperature_radio_group"
+            android:checkedButton="@+id/celcius_button">
+
+            <RadioButton
+                android:text="Celcius"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/celcius_button"
+                android:layout_weight="1"
+                android:layout_marginBottom="8dp" />
+
+            <RadioButton
+                android:text="Fahrenheit"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/fahrenheit_button" />
+        </RadioGroup>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentStart="true"
+        android:layout_weight="5"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/wind_settings"
+            android:text="Wind Settings" />
+
+        <RadioGroup
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/wind_radio_group"
+            android:checkedButton="@+id/mph_button">
+
+            <RadioButton
+                android:text="Miles Per Hour"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/mph_button"
+                android:layout_weight="1" />
+
+            <RadioButton
+                android:text="Km Per Hour"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/km_button"
+                android:layout_weight="1" />
+        </RadioGroup>
+
+    </LinearLayout>
+
 </LinearLayout>

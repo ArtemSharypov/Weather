@@ -8,6 +8,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Filter;
 import android.widget.Filterable;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -90,7 +91,17 @@ public class AutoCompleteArrayAdapter extends ArrayAdapter<String> implements Fi
         try
         {
             JSONObject autoCompleteData = new JSONObject(autoCompleteJSON);
+            JSONArray predictions = autoCompleteData.getJSONArray("predictions");
+            JSONObject currItem;
+            String location;
 
+            for(int i = 0; i < predictions.length(); i++)
+            {
+                currItem = predictions.getJSONObject(i);
+                location = currItem.getString("description");
+
+                data.add(location);
+            }
 
 
         }
@@ -101,5 +112,4 @@ public class AutoCompleteArrayAdapter extends ArrayAdapter<String> implements Fi
 
         return data;
     }
-
 }

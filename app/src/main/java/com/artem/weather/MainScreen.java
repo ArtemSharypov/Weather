@@ -207,8 +207,8 @@ public class MainScreen extends AppCompatActivity{
         @Override
         protected void onPostExecute(String autoCompleteJSON) {
             super.onPostExecute(autoCompleteJSON);
-            //autoCompleteAdapter.getFilter().filter(autoCompleteJSON);
-            System.out.println(autoCompleteJSON);
+            autoCompleteAdapter.getFilter().filter(autoCompleteJSON);
+            //System.out.println(autoCompleteJSON);
         }
     }
 

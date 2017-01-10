@@ -84,26 +84,6 @@
                 android:layout_alignParentStart="true" />
 
             <TextView
-                android:text="Sunrise time"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/sunrise"
-                android:layout_marginStart="14dp"
-                android:layout_alignParentBottom="true"
-                android:layout_toEndOf="@+id/sunset"
-                android:layout_marginBottom="13dp" />
-
-            <TextView
-                android:text="Sunset time"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/sunset"
-                android:layout_marginStart="34dp"
-                android:layout_alignBaseline="@+id/sunrise"
-                android:layout_alignBottom="@+id/sunrise"
-                android:layout_toEndOf="@+id/precipitation_amount" />
-
-            <TextView
                 android:text="precipitation %"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -128,21 +108,42 @@
                 android:layout_above="@+id/humidity"
                 android:layout_alignParentStart="true" />
 
-            <ImageView
-                app:srcCompat="@drawable/chancetstorms"
-                android:id="@+id/weather_icon"
-                android:layout_height="100dp"
-                android:layout_width="100dp"
-                android:layout_alignParentTop="true"
-                android:layout_toEndOf="@+id/sunset" />
-
             <TextView
                 android:text="conditions"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/curr_conditions"
                 android:layout_below="@+id/weather_icon"
-                android:layout_alignStart="@+id/sunrise" />
+                android:layout_alignEnd="@+id/weather_icon"
+                android:layout_marginEnd="13dp" />
+
+            <ImageView
+                app:srcCompat="@drawable/chancetstorms"
+                android:id="@+id/weather_icon"
+                android:layout_height="100dp"
+                android:layout_width="100dp"
+                android:layout_above="@+id/precipitation_chance"
+                android:layout_alignStart="@+id/sunset"
+                android:layout_marginStart="21dp" />
+
+            <TextView
+                android:text="Sunset time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/sunset"
+                android:layout_alignBaseline="@+id/sunrise"
+                android:layout_alignBottom="@+id/sunrise"
+                android:layout_toStartOf="@+id/sunrise"
+                android:layout_marginEnd="15dp" />
+
+            <TextView
+                android:text="Sunrise time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/sunrise"
+                android:layout_marginBottom="12dp"
+                android:layout_alignParentBottom="true"
+                android:layout_alignParentEnd="true" />
 
 
         </RelativeLayout>

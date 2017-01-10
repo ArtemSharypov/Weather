@@ -5,9 +5,17 @@
     //temp placeholder till autocomplete
 
     <item
+        android:id="@+id/search_auto"
+        android:actionViewClass="android.support.v7.widget.SearchView"
+        app:actionLayout="@layout/search_bar"
+        android:title="Search"
+        app:showAsAction="always"
+        />
+    <item
         android:id="@+id/search_button"
         android:actionViewClass="android.support.v7.widget.SearchView"
-        android:title="Search PH"
+        android:title="GPS"
+        android:icon="@drawable/ic_search_black_24dp"
         app:showAsAction="always"
         />
     <item
@@ -20,7 +28,7 @@
     <item
         android:id="@+id/options_button"
         android:actionViewClass="android.support.v7.widget.SearchView"
-        android:title="Preferences"
+        android:title="Options"
         app:showAsAction="never"
         />
 </menu>

@@ -1,6 +1,7 @@
 package com.artem.weather;
 
 import android.content.Context;
+import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
@@ -12,6 +13,9 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -46,7 +50,7 @@ public class MainScreen extends AppCompatActivity {
             this.queryType = queryType;
         }
 
-        //Longitude/latitude need a intial geolookup call THEN can do the normal call
+        //Longitude/latitude need a initial geolookup call THEN can do the normal call
         public DataQuerier(long latitude, long longitude, String queryType)
         {
             INITIAL_CALL = "http://api.wunderground.com/api/" + APIHolder.API_KEY + "/";
@@ -72,28 +76,28 @@ public class MainScreen extends AppCompatActivity {
                     //Changes the URL based on the query requested
                     switch(queryType)
                     {
-                        case "conditions":
+                        case CONDITIONS:
                             urlInfo += "conditions/q/";
                             break;
-                        case "forecast":
+                        case FORECAST:
                             urlInfo += "forecast/q/";
                             break;
-                        case "forecast10day":
+                        case FORECAST_10DAY:
                             urlInfo += "forecast10day/q/";
                             break;
-                        case "hourly":
+                        case HOURLY:
                             urlInfo += "hourly/q/";
                             break;
-                        case "hourly10day":
+                        case HOURLY_10DAY:
                             urlInfo += "hourly10day/q/";
                             break;
-                        case "autocomplete":
+                        case AUTO_COMPLETE:
                             urlInfo = "http://autocomplete.wunderground.com/aq?query=" + city;
                             break;
                     }
 
                     //need to find a better place or way to do it without code repetition
-                    if(!queryType.equals("autocomplete"))
+                    if(!queryType.equals(AUTO_COMPLETE))
                         urlInfo += country + "/" + city + ".json";
 
                     url = new URL(urlInfo);
@@ -129,7 +133,7 @@ public class MainScreen extends AppCompatActivity {
             super.onPostExecute(data);
 
             //Check what the query was for and populate that one
-            if(queryType.equals("conditions"))
+            if(queryType.equals(CONDITIONS))
             {
                 populateInfo(data);
             }
@@ -140,36 +144,47 @@ public class MainScreen extends AppCompatActivity {
         }
     }
 
-    RecyclerView recyclerView;
-    TextView location;
-    TextView temperature;
-    TextView feelsLike;
-    TextView windInfo;
-    TextView precipAmt;
-    TextView precipChance;
-    TextView humidity;
-    TextView sunrise;
-    TextView sunset;
-    TextView dateLastUpdated;
-    TextView currConditions;
-    ImageView weatherIcon;
-    Toolbar toolbar;
-    Button forecast3Day;
-    Button forecast10Day;
-    Button hourly48Hours;
-    Button hourly10Days;
+    private RecyclerView recyclerView;
+    private TextView location;
+    private TextView temperature;
+    private TextView feelsLike;
+    private TextView windInfo;
+    private TextView precipAmt;
+    private TextView precipChance;
+    private TextView humidity;
+    private TextView sunrise;
+    private TextView sunset;
+    private TextView dateLastUpdated;
+    private TextView currConditions;
+    private ImageView weatherIcon;
+    private Toolbar toolbar;
+    private Button forecast3Day;
+    private Button forecast10Day;
+    private Button hourly48Hours;
+    private Button hourly10Days;
+    private AutoCompleteTextView autoCompleteText;
 
-    WeatherAdapter adapter;
-    ArrayList<WeatherInfo> weatherList;
-    WeatherInfo currentWeather;
+    private WeatherAdapter adapter;
+    private ArrayList<WeatherInfo> weatherList;
+    private ArrayList<String> locationList;
+    private WeatherInfo currentWeather;
 
-    String currCity = "Winnipeg";
-    String currCountry = "Canada";
+    private String currCity = "Winnipeg";
+    private String currCountry = "Canada";
 
     private final int FORECAST_3DAY_MODE = 1;
     private final int FORECAST_10DAY_MODE = 2;
     private final int HOURLY_2DAY_MODE = 3;
     private final int HOURLY_10DAY_MODE = 4;
+
+    private final String CONDITIONS = "conditions";
+    private final String FORECAST = "forecast";
+    private final String FORECAST_10DAY = "forecast10day";
+    private final String HOURLY = "hourly";
+    private final String HOURLY_10DAY = "hourly10day";
+
+    private final String AUTO_COMPLETE = "autocomplete";
+
     private int current_mode; //Data thats displayed in the recyclerview
 
     @Override
@@ -219,7 +234,7 @@ public class MainScreen extends AppCompatActivity {
             public void onClick(View view) {
                 if(current_mode != FORECAST_3DAY_MODE)
                 {
-                    new DataQuerier(currCity, currCountry, "forecast").execute();
+                    new DataQuerier(currCity, currCountry, FORECAST).execute();
                     current_mode = FORECAST_3DAY_MODE;
                 }
             }
@@ -231,7 +246,7 @@ public class MainScreen extends AppCompatActivity {
             public void onClick(View view) {
                 if(current_mode != FORECAST_10DAY_MODE)
                 {
-                    new DataQuerier(currCity, currCountry, "forecast10day").execute();
+                    new DataQuerier(currCity, currCountry, FORECAST_10DAY).execute();
                     current_mode = FORECAST_10DAY_MODE;
                 }
             }
@@ -243,7 +258,7 @@ public class MainScreen extends AppCompatActivity {
             public void onClick(View view) {
                 if(current_mode != HOURLY_2DAY_MODE)
                 {
-                    new DataQuerier(currCity, currCountry, "hourly").execute();
+                    new DataQuerier(currCity, currCountry, HOURLY).execute();
                     current_mode = HOURLY_2DAY_MODE;
                 }
             }
@@ -255,7 +270,7 @@ public class MainScreen extends AppCompatActivity {
             public void onClick(View view) {
                 if(current_mode != HOURLY_10DAY_MODE)
                 {
-                    new DataQuerier(currCity, currCountry, "hourly10day").execute();
+                    new DataQuerier(currCity, currCountry, HOURLY_10DAY).execute();
                     current_mode = HOURLY_10DAY_MODE;
                 }
             }
@@ -263,8 +278,8 @@ public class MainScreen extends AppCompatActivity {
 
         //will change depending on the city, just a default location for now.
         //second query changes based on preferences, forecast will be default
-        new DataQuerier(currCity, currCountry, "conditions").execute();
-        new DataQuerier(currCity, currCountry, "forecast").execute(); //will change depending on preferences / options
+        new DataQuerier(currCity, currCountry, CONDITIONS).execute();
+        new DataQuerier(currCity, currCountry, FORECAST).execute(); //will change depending on preferences / options
     }
 
     //Creates the toolbar
@@ -273,6 +288,23 @@ public class MainScreen extends AppCompatActivity {
     {
         getMenuInflater().inflate(R.menu.main, menu);
 
+        View view = menu.findItem(R.id.search_auto).getActionView();
+        autoCompleteText = (AutoCompleteTextView) view.findViewById(R.id.search);
+
+        ArrayAdapter<String> autoCompleteAdapter
+                = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, locationList);
+        autoCompleteText.setAdapter(autoCompleteAdapter);
+
+        //Sets the texts in it, allowing the search
+        autoCompleteText.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                String location = (String) parent.getItemAtPosition(position);
+                autoCompleteText.setText(location);
+
+            }
+        });
+
         return super.onCreateOptionsMenu(menu);
     }
 
@@ -280,6 +312,29 @@ public class MainScreen extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         boolean result = super.onOptionsItemSelected(item);
+
+        switch(item.getItemId())
+        {
+            case R.id.search_button:
+                //Format is City, Country
+                String[] location = autoCompleteText.getText().toString().split(",");
+                location[0].trim();
+                location[1].trim();
+
+                currCity = location[0];
+                currCountry = location[1];
+
+                new DataQuerier(currCity, currCountry, CONDITIONS);
+                new DataQuerier(currCity, currCountry, FORECAST);
+
+                break;
+            case R.id.options_button:
+                Intent intent = new Intent(this, Options.class);
+                startActivity(intent);
+                break;
+        }
+
+        //other place but there needs to be onclick for the pop ups for the auto complete to query based on the selection
 
         return result;
     }
@@ -305,15 +360,14 @@ public class MainScreen extends AppCompatActivity {
 
                 location.setText(currentWeather.getLocation());
 
-                temperature.setText("Current Temp: " + currentWeather.getTemperature() + "°C");
-                feelsLike.setText("Feels Like: " + currentWeather.getFeelsLike() + "°C");
+                temperature.setText(currentWeather.getTemperature());
+                feelsLike.setText(currentWeather.getFeelsLike());
 
-                windInfo.setText("Wind: " + currentWeather.getWindSpeed() + "mph " +
-                        currentWeather.getWindDirection()
-                        + "\n Gusts of " + currentWeather.getWindGust() + "mph");
+                windInfo.setText(currentWeather.getWindSpeed() + currentWeather.getWindDirection() +
+                        "\n" + currentWeather.getWindGust());
 
-                precipAmt.setText("Snow/Rain:" + currentWeather.getPrecipitationAmount() + "in");
-                humidity.setText("Humidity: " + currentWeather.getHumidity());
+                precipAmt.setText(currentWeather.getPrecipitationAmount());
+                humidity.setText(currentWeather.getHumidity());
 
                 dateLastUpdated.setText(currentWeather.getDateUpdated());
 
@@ -343,12 +397,12 @@ public class MainScreen extends AppCompatActivity {
                 JSONParser parser = new JSONParser(this);
 
                 //Checks what its parsing for
-                if(parseType.equals("forecast") || parseType.equals("forecast10day"))
+                if(parseType.equals(FORECAST) || parseType.equals(FORECAST_10DAY))
                 {
                     ArrayList<WeatherInfo> newWeatherInfo = parser.parseDaily(weather);
                     adapter.swap(newWeatherInfo);
                 }
-                else if(parseType.equals("hourly") || parseType.equals("hourly10day"))
+                else if(parseType.equals(HOURLY) || parseType.equals(HOURLY_10DAY))
                 {
                     ArrayList<WeatherInfo> newWeatherInfo = parser.parseHourly(weather);
                     adapter.swap(newWeatherInfo);

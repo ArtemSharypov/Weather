@@ -70,17 +70,38 @@ public class WeatherAdapter extends RecyclerView.Adapter<WeatherAdapter.ViewHold
     {
         WeatherInfo weather = weatherList.get(position);
 
-        //need to move high of and such into the weatherInfo itself
         //Sets all of the information in the view
         holder.date.setText(weather.getTimeOfWeather());
-        holder.currentTemp.setText("Current Temp: " + weather.getTemperature() + "°C");
-        holder.lowOfTemp.setText("Low Of: " + weather.getLowOfTemp() + "°C");
-        holder.highOfTemp.setText("High Of: " +weather.getHighOfTemp() + "°C");
-        holder.windInfo.setText("Wind: " + weather.getWindSpeed() + " " +
-                weather.getWindDirection() + "mph ");
-        holder.humidity.setText("Humidity: " + weather.getHumidity());
+        holder.currentTemp.setText(weather.getTemperature());
+        holder.lowOfTemp.setText(weather.getLowOfTemp());
+        holder.highOfTemp.setText(weather.getHighOfTemp());
+        holder.windInfo.setText(weather.getWindSpeed() + weather.getWindDirection());
+        holder.humidity.setText(weather.getHumidity());
         holder.icon.setImageBitmap(weather.getIconToUse());
         holder.currConditions.setText(weather.getConditions());
+        holder.feelsLikeTemp.setText(weather.getFeelsLike());
+
+        //Hides textviews depending on if there was any content to be shown or not
+        if(weather.getLowOfTemp() != null)
+            holder.lowOfTemp.setVisibility(View.INVISIBLE);
+        else
+            holder.lowOfTemp.setVisibility(View.VISIBLE);
+
+        if(weather.getHighOfTemp() != null)
+            holder.lowOfTemp.setVisibility(View.INVISIBLE);
+        else
+            holder.lowOfTemp.setVisibility(View.VISIBLE);
+
+        if(weather.getTemperature() != null)
+            holder.lowOfTemp.setVisibility(View.INVISIBLE);
+        else
+            holder.lowOfTemp.setVisibility(View.VISIBLE);
+
+        if(weather.getFeelsLike() != null)
+            holder.lowOfTemp.setVisibility(View.INVISIBLE);
+        else
+            holder.lowOfTemp.setVisibility(View.VISIBLE);
+
     }
 
     @Override

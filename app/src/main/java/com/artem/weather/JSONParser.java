@@ -1,6 +1,7 @@
 package com.artem.weather;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -8,39 +9,89 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 
+import static android.content.Context.MODE_PRIVATE;
+
 public class JSONParser {
 
     private Context context;
+    private SharedPreferences prefs;
+    private final boolean timeFormat12Hr;
+    private final boolean precipitationMM;
+    private final boolean tempInCelcius;
+    private final boolean windInMPH;
 
     public JSONParser(Context context)
     {
         this.context = context;
+        prefs = context.getSharedPreferences("weather", MODE_PRIVATE);
+
+        timeFormat12Hr= prefs.getBoolean("12HourFormat", true);
+        precipitationMM = prefs.getBoolean("precipitationMM", true);
+        tempInCelcius = prefs.getBoolean("temperatureCelcius", true);
+        windInMPH = prefs.getBoolean("windMPH", true);
+
     }
 
     //Parses location, date the weather was last updated, temperature, what it feels like out,
     //humidity, precipitation amount, wind speed / direction / gust, and the icon to display and
     //the current conditions
-    public WeatherInfo parseForWeather(JSONObject mainData)
+    public WeatherInfo parseConditions(JSONObject mainData)
     {
         WeatherInfo weather = new WeatherInfo(context);
+
+        String temperature;
+        String feelsLike;
+        String wind;
+        String windGust;
+        String precipitation;
 
         try
         {
             JSONObject weatherDataSection = mainData.getJSONObject("current_observation"); //current observations[[[[[[[[[[[[[[[[[[[[[[[]
             JSONObject weatherDisplayLoc = weatherDataSection.getJSONObject("display_location"); //display location
 
+            //switch between Celcius and Fahrenheit
+            if(tempInCelcius)
+            {
+                temperature = weatherDataSection.getString("temp_c") + "°C";
+                feelsLike = weatherDataSection.getString("feelslike_c")+ "°C";
+            }
+            else
+            {
+                temperature = weatherDataSection.getString("temp_f") + "°F";
+                feelsLike = weatherDataSection.getString("feelslike_f")+ "°F";
+            }
+
+            //Switch between mm and in
+            if(precipitationMM)
+                precipitation = weatherDataSection.getString("precip_today_metric") + "mm";
+            else
+                precipitation = weatherDataSection.getString("precip_today_in") + "in";
+
+            //Changes windspeeds to MPH or KPH
+            if(windInMPH)
+            {
+                wind = weatherDataSection.getString("wind_mph") + "mph ";
+                windGust = weatherDataSection.getString("wind_gust_mph") + "mph";
+            }
+            else
+            {
+                wind = weatherDataSection.getString("wind_kph") + "kph ";
+                windGust = weatherDataSection.getString("wind_gust_kph") + "kph";
+            }
+
             weather.setLocation(weatherDisplayLoc.getString("full"));
             weather.setDateUpdated(weatherDataSection.getString("observation_time"));
 
-            weather.setTemperature("Curr Temp: " + weatherDataSection.getString("temp_c") + "°C");
-            weather.setFeelsLike("Feels Like: " + weatherDataSection.getString("feelslike_c")+ "°C");
+            weather.setTemperature("Curr Temp: " + temperature);
+            weather.setFeelsLike("Feels Like: " + feelsLike);
 
-            weather.setHumidity("Humidity: " + weatherDataSection.getString("relative_humidity"));
-            weather.setPrecipitationAmount("Snow/Rain " + weatherDataSection.getString("precip_today_metric") + "mm");
+            weather.setHumidity("Humidity: " + weatherDataSection.getString("relative_humidity") + "%");
+            weather.setPrecipitationAmount("Snow/Rain " + precipitation);
 
-            weather.setWindSpeed("Wind: " + weatherDataSection.getString("wind_mph") + "mph ");
+            weather.setWindSpeed("Wind: " + wind);
             weather.setWindDirection(weatherDataSection.getString("wind_dir"));
-            weather.setWindGust("Gusts of " + weatherDataSection.getString("wind_gust_mph") + "mph");
+            weather.setWindGust("Gusts of " + windGust);
 
             weather.setIconToUse(weatherDataSection.getString("icon"));
             weather.setConditions(weatherDataSection.getString("weather"));
@@ -60,6 +111,11 @@ public class JSONParser {
     {
         ArrayList<WeatherInfo> parsedHourlyData = new ArrayList<WeatherInfo>();
 
+        String currTemp;
+        String feelsLikeTemp;
+        String wind;
+        String timeStamp;
+
         try
         {
             JSONArray hourlyData = mainData.getJSONArray("hourly_forecast");
@@ -74,20 +130,45 @@ public class JSONParser {
                 JSONObject windDir = currArrayItem.getJSONObject("wdir");
                 JSONObject feelsLike = currArrayItem.getJSONObject("feelslike");
 
+                timeStamp = time.getString("weekday_name_abbrev") + " ";
+
+                //switch between Celcius and Fahrenheit
+                if(tempInCelcius)
+                {
+                    currTemp =  temperature.getString("metric") + "°C";
+                    feelsLikeTemp = feelsLike.getString("metric")+ "°C";
+                }
+                else
+                {
+                    currTemp = temperature.getString("english") + "°F";
+                    feelsLikeTemp = feelsLike.getString("english")+ "°F";
+                }
+
+                //changes windspeeds to MPH or KPH
+                if(windInMPH)
+                    wind = windSpeed.getString("metric") + "mph ";
+                else
+                    wind = windSpeed.getString("english") + "kph ";
+
+                //change between 12 hour and 24 hour time format
+                if(timeFormat12Hr)
+                    timeStamp += time.getString("civil");
+                else
+                    timeStamp += time.getString("hour") + ":" + time.getString("min");
+
                 WeatherInfo weather = new WeatherInfo(context);
 
-                weather.setTemperature("Curr Temp: " + temperature.getString("metric") + "°C");
-                weather.setFeelsLike("Feels Like: " + feelsLike.getString("metric")+ "°C");
+                weather.setTemperature("Curr Temp: " + currTemp);
+                weather.setFeelsLike("Feels Like: " + feelsLikeTemp);
 
-                weather.setWindSpeed("Wind: " + windSpeed.getString("metric") + "mph ");
+                weather.setWindSpeed("Wind: " + wind);
                 weather.setWindDirection(windDir.getString("dir"));
 
-                weather.setHumidity("Humidity: " + currArrayItem.getString("humidity"));
+                weather.setHumidity("Humidity: " + currArrayItem.getString("humidity") + "%");
 
                 weather.setIconToUse(currArrayItem.getString("icon"));
                 weather.setConditions(currArrayItem.getString("condition"));
 
-                String timeStamp = time.getString("weekday_name_abbrev") + " " + time.getString("civil");
                 weather.setTimeOfWeather(timeStamp);
 
                 parsedHourlyData.add(weather);
@@ -108,6 +189,11 @@ public class JSONParser {
     {
         ArrayList<WeatherInfo> parsedDailyData = new ArrayList<WeatherInfo>();
 
+        String tempLow;
+        String tempHigh;
+        String windSpeed;
+        String precipitation;
+
         //Tries to parse all the date in the object
         try
         {
@@ -124,21 +210,45 @@ public class JSONParser {
                 JSONObject rain = currItem.getJSONObject("qpf_allday"); //might need one for snow and switch off depending on the weather?
                 JSONObject wind = currItem.getJSONObject("avewind");
 
+                //switch between Celcius and Fahrenheit
+                if(tempInCelcius)
+                {
+                    tempLow = high.getString("celsius") + "°C";
+                    tempHigh = low.getString("celsius")+ "°C";
+                }
+                else
+                {
+                    tempLow = high.getString("fahrenheit") + "°F";
+                    tempHigh = low.getString("fahrenheit")+ "°F";
+                }
+
+                //Switch between mm and in
+                if(precipitationMM)
+                    precipitation = rain.getString("mm") + "mm";
+                else
+                    precipitation = rain.getString("in") + "in";
+
+                //Changes windspeeds to MPH or KPH
+                if(windInMPH)
+                    windSpeed = wind.getString("mph") + "mph ";
+                else
+                    windSpeed = wind.getString("kph") + "kph ";
+
                 WeatherInfo weather = new WeatherInfo(context);
 
-                weather.setHighOfTemp("High Of: " + high.getString("celsius") + "°C");
-                weather.setLowOfTemp("Low Of: " + low.getString("celsius") + "°C");
+                weather.setHighOfTemp("High Of: " + tempHigh);
+                weather.setLowOfTemp("Low Of: " + tempLow);
 
-                weather.setPrecipitationAmount("Snow/Rain" + rain.getString("mm")+ "mm");
+                weather.setPrecipitationAmount("Snow/Rain" + precipitation);
                 weather.setPrecipitationChance("Precipitation %" + currItem.getString("pop") + "%");
 
-                weather.setHumidity("Humidity: " + currItem.getString("avehumidity"));
+                weather.setHumidity("Humidity: " + currItem.getString("avehumidity") + "%");
 
                 weather.setIconToUse(currItem.getString("icon"));
                 weather.setConditions(currItem.getString("conditions"));
 
                 weather.setWindDirection(wind.getString("dir"));
-                weather.setWindSpeed("Wind: " + wind.getString("mph") + "mph ");
+                weather.setWindSpeed("Wind: " + windSpeed);
 
                 String timeStamp = date.getString("weekday_short") + " " + date.getString("monthname")
                         + " " + date.getString("day");
@@ -153,5 +263,67 @@ public class JSONParser {
         }
 
         return parsedDailyData;
+    }
+
+    public ArrayList<String> parseAstronomy(JSONObject astronomyData)
+    {
+        ArrayList<String> sunData = new ArrayList<>();
+
+        try
+        {
+            JSONObject moonData = astronomyData.getJSONObject("moon_phase");
+            JSONObject sunrise = moonData.getJSONObject("sunrise");
+            JSONObject sunset = moonData.getJSONObject("sunset");
+
+            String sunriseTime = "";
+            String sunsetTime = "";
+            String temp;
+            Long tempNumb;
+
+            if(timeFormat12Hr)
+            {
+                temp = sunrise.getString("hour");
+                tempNumb = Long.parseLong(temp);
+
+                //Switch to PM format if its past noon
+                if(tempNumb > 12)
+                {
+                    tempNumb -= 12;
+                    sunriseTime = tempNumb + ":" + sunrise.getString("minute") + "pm";
+                }
+                else
+                {
+                    sunriseTime = temp + ":" + sunrise.getString("minute") + "am";
+                }
+
+                temp = sunset.getString("hour");
+                tempNumb = Long.parseLong(temp);
+
+                //Switch to PM format if its past noon
+                if(tempNumb > 12)
+                {
+                    tempNumb -= 12;
+                    sunsetTime = tempNumb + ":" + sunset.getString("minute") + "pm";
+                }
+                else
+                {
+                    sunsetTime = temp + ":" + sunset.getString("minute") + "am";
+                }
+            }
+            else
+            {
+                sunriseTime = sunrise.getString("hour") + ":" + sunrise.getString("minute");
+                sunsetTime = sunset.getString("hour") + ":" + sunset.getString("minute");
+            }
+
+            sunData.add(sunriseTime);
+            sunData.add(sunsetTime);
+        }
+        catch(JSONException error)
+        {
+            error.printStackTrace();
+        }
+
+        return sunData;
     }
 }

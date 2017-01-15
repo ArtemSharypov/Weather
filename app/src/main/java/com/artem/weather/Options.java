@@ -1,6 +1,7 @@
 package com.artem.weather;
 
 
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -15,6 +16,9 @@ public class Options extends AppCompatActivity{
     RadioGroup temperature;
     RadioGroup wind;
 
+    SharedPreferences prefs;
+    SharedPreferences.Editor prefsEditor;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -23,18 +27,35 @@ public class Options extends AppCompatActivity{
         Toolbar toolbar = (Toolbar) findViewById(R.id.options_toolbar);
         setSupportActionBar(toolbar);
 
+        prefs = this.getSharedPreferences("weather", MODE_PRIVATE);
+        final boolean timeFormat12Hr= prefs.getBoolean("12HourFormat", true);
+        final boolean precipitationMM = prefs.getBoolean("precipitationMM", true);
+        final boolean tempInCelcius = prefs.getBoolean("temperatureCelcius", true);
+        final boolean windInMPH = prefs.getBoolean("windMPH", true);
+
+        prefsEditor = getPreferences(MODE_PRIVATE).edit();
+
         time = (RadioGroup) findViewById(R.id.time_radio_group);
         time.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(RadioGroup radioGroup, int id) {
+                //Changes the format of the time being displayed
                 switch(id)
                 {
                     case R.id.format_12hour_button:
-                        //change to 12hour format
+                        //switch to 12hour format
+                        if(!timeFormat12Hr) {
+                            prefsEditor.putBoolean("12HourFormat", true);
+                            prefsEditor.apply();
+                        }
                         break;
 
                     case R.id.format_24hour_button:
-                        //change to 24 hour format
+                        //switch to 24hour format
+                        if(timeFormat12Hr) {
+                            prefsEditor.putBoolean("12HourFormat", false);
+                            prefsEditor.apply();
+                        }
                         break;
 
                 }
@@ -45,14 +66,25 @@ public class Options extends AppCompatActivity{
         precipitation.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(RadioGroup radioGroup, int id) {
+                //Changes precipitation format to inches or mm
                 switch(id)
                 {
                     case R.id.mm_button:
-                        //change precipitation to mm
+                        //Switch to milimetres
+                        if(!precipitationMM)
+                        {
+                            prefsEditor.putBoolean("precipitationMM", true);
+                            prefsEditor.apply();
+                        }
                         break;
 
                     case R.id.inches_button:
-                        //change precipitation to in
+                        //Switch to inches
+                        if(precipitationMM)
+                        {
+                            prefsEditor.putBoolean("precipitationMM", false);
+                            prefsEditor.apply();
+                        }
                         break;
                 }
             }
@@ -62,14 +94,25 @@ public class Options extends AppCompatActivity{
         temperature.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(RadioGroup radioGroup, int id) {
+                //Changes format of the temperature being shown in Fahrenheit or Celcius
                 switch(id)
                 {
                     case R.id.celcius_button:
-                        //change to celcius
+                        //Switch to Celcius
+                        if(!tempInCelcius)
+                        {
+                            prefsEditor.putBoolean("temperatureCelcius", true);
+                            prefsEditor.apply();
+                        }
                         break;
 
                     case R.id.fahrenheit_button:
-                        //change to fahrenheit
+                        //Switch to Fahrenheit
+                        if(tempInCelcius)
+                        {
+                            prefsEditor.putBoolean("temperatureCelcius", false);
+                            prefsEditor.apply();
+                        }
                         break;
                 }
 
@@ -80,13 +123,24 @@ public class Options extends AppCompatActivity{
         wind.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(RadioGroup radioGroup, int id) {
+                //Changes the wind speed to MPH or KPH
                 switch(id)
                 {
                     case R.id.mph_button:
-                        //switch to mph
+                        //Switch to MPH
+                        if(!windInMPH)
+                        {
+                            prefsEditor.putBoolean("windMPH", true);
+                            prefsEditor.apply();
+                        }
                         break;
                     case R.id.km_button:
-                        //switch to km
+                        //switch to KPH
+                        if(windInMPH)
+                        {
+                            prefsEditor.putBoolean("windMPH", false);
+                            prefsEditor.apply();
+                        }
                         break;
                 }
             }
@@ -107,11 +161,7 @@ public class Options extends AppCompatActivity{
         switch(item.getItemId())
         {
             case R.id.back_button:
-                //dialog button maybe
                 finish();
-                break;
-            case R.id.save_button:
-                //update shared preferences
                 break;
         }
 

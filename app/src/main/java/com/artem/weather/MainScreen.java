@@ -54,6 +54,7 @@ public class MainScreen extends AppCompatActivity implements GoogleApiClient.Con
         private final String INITIAL_CALL
                 = "http://api.wunderground.com/api/" + APIHolder.WG_API_KEY + "/";
 
+        //Used for finding the current weather in a city, country
         public WGQuerier(String city, String country, String queryType)
         {
             this.city = city;
@@ -61,7 +62,7 @@ public class MainScreen extends AppCompatActivity implements GoogleApiClient.Con
             this.queryType = queryType;
         }
 
-        //Longitude/latitude need a initial geolookup call THEN can do the normal call
+        //Used for finding the city, country of a GPS location
         public WGQuerier(double latitude, double longitude, String queryType)
         {
             this.latitude = latitude;
@@ -69,7 +70,6 @@ public class MainScreen extends AppCompatActivity implements GoogleApiClient.Con
             this.queryType = queryType;
         }
 
-        //Downloads the JSONObject file in the background
         @Override
         protected String doInBackground(String... strings)
         {
@@ -77,7 +77,8 @@ public class MainScreen extends AppCompatActivity implements GoogleApiClient.Con
             URL url;
             String urlInfo = INITIAL_CALL;
 
-            //Tries to connect to the API and get the conditions for that city
+            //Tries to connect to the API and get the conditions for that city or find the city
+            //based on location
             try
             {
                 //Can't download without any internet connection
@@ -230,7 +231,6 @@ public class MainScreen extends AppCompatActivity implements GoogleApiClient.Con
     private TextView feelsLike;
     private TextView windInfo;
     private TextView precipAmt;
-    private TextView precipChance;
     private TextView humidity;
     private TextView sunrise;
     private TextView sunset;
@@ -294,7 +294,6 @@ public class MainScreen extends AppCompatActivity implements GoogleApiClient.Con
         feelsLike = (TextView) findViewById(R.id.feels_like);
         windInfo = (TextView) findViewById(R.id.wind_info);
         precipAmt = (TextView) findViewById(R.id.precipitation_amount);
-        precipChance = (TextView) findViewById(R.id.precipitation_chance);
         humidity = (TextView) findViewById(R.id.humidity);
         sunrise = (TextView) findViewById(R.id.sunrise);
         sunset = (TextView) findViewById(R.id.sunset);
@@ -368,7 +367,6 @@ public class MainScreen extends AppCompatActivity implements GoogleApiClient.Con
     //Tries to find the current location
     private void findLocation()
     {
-        //Tries to get the last location
         try
         {
             lastLocation = LocationServices.FusedLocationApi.getLastLocation(googleApiClient);
@@ -386,9 +384,7 @@ public class MainScreen extends AppCompatActivity implements GoogleApiClient.Con
             double latitude = lastLocation.getLatitude();
             double longitude = lastLocation.getLongitude();
 
-            new WGQuerier(latitude, longitude, CONDITIONS).execute();
-            new WGQuerier(latitude, longitude, FORECAST).execute();
-            new WGQuerier(latitude, longitude, ASTRONOMY).execute();
+            new WGQuerier(latitude, longitude, GEOLOOKUP).execute();
         }
         else
         {
@@ -634,20 +630,30 @@ public class MainScreen extends AppCompatActivity implements GoogleApiClient.Con
     {
         try
         {
-            JSONObject location = new JSONObject(locationJSON);
+            JSONObject locationName = new JSONObject(locationJSON);
+            JSONObject location = locationName.getJSONObject("location");
 
-            String tempCity = location.getString("city");
             String tempCountry = location.getString("country_name");
 
             //USA uses country based on state, not the country itself
             if(tempCountry.equals("USA"))
+            {
                 currCountry = location.getString("state");
+                currCity = location.getString("city");
+            }
             else
+            {
                 currCountry = tempCountry;
 
+                //Wunderground handles Canada weird, parts of the city are called city.
+                //So it splits tz_long which is America/City in canada
+                String tempCity = location.getString("tz_long");
+                String[] split = tempCity.split("/");
+
+                currCity = split[split.length - 1]; //City should be at the end
+            }
             //Replaces spaces with underscores to make the query still work
-            tempCity = tempCity.replaceAll(" ", "_");
-            currCity = tempCity;
+            currCity = currCity.replaceAll(" ", "_");
 
             populateDisplays();
         }
@@ -687,6 +693,8 @@ public class MainScreen extends AppCompatActivity implements GoogleApiClient.Con
 
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-
+        Toast.makeText(getApplicationContext(),
+                "Failed to connect", Toast.LENGTH_LONG)
+                .show();
     }
 }

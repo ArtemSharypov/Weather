@@ -36,7 +36,6 @@ public class AutoCompleteArrayAdapter extends ArrayAdapter<String> implements Fi
     @NonNull
     @Override
     public Filter getFilter() {
-
         final Filter filter = new Filter()
         {
             @Override
@@ -71,7 +70,6 @@ public class AutoCompleteArrayAdapter extends ArrayAdapter<String> implements Fi
                 {
                     notifyDataSetInvalidated();
                 }
-
             }
         };
 
@@ -84,13 +82,14 @@ public class AutoCompleteArrayAdapter extends ArrayAdapter<String> implements Fi
         return locationList.get(position);
     }
 
-    public ArrayList<String> readData(String autoCompleteJSON)
+    //Adds in all locations from autoCompleteText into a ArrayList
+    public ArrayList<String> readData(String autoCompleteText)
     {
-        ArrayList<String> data = new ArrayList<>();
+        ArrayList<String> autoCompleteJSON = new ArrayList<>();
 
         try
         {
-            JSONObject autoCompleteData = new JSONObject(autoCompleteJSON);
+            JSONObject autoCompleteData = new JSONObject(autoCompleteText);
             JSONArray predictions = autoCompleteData.getJSONArray("predictions");
             JSONObject currItem;
             String location;
@@ -100,16 +99,14 @@ public class AutoCompleteArrayAdapter extends ArrayAdapter<String> implements Fi
                 currItem = predictions.getJSONObject(i);
                 location = currItem.getString("description");
 
-                data.add(location);
+                autoCompleteJSON.add(location);
             }
-
-
         }
         catch (JSONException error)
         {
             error.printStackTrace();
         }
 
-        return data;
+        return autoCompleteJSON;
     }
 }

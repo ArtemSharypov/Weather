@@ -35,11 +35,19 @@
             android:layout_alignParentEnd="true" />
 
         <TextView
-            android:text="precipitation chance"
+            android:text="temperature"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/precipitation_chance"
-            android:layout_below="@+id/precipitation_amount"
+            android:id="@+id/current_temp"
+            android:layout_above="@+id/day_conditions"
+            android:layout_alignParentStart="true" />
+
+        <TextView
+            android:text="Feels Like"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/feels_like"
+            android:layout_below="@+id/current_temp"
             android:layout_alignParentStart="true" />
 
         <TextView
@@ -47,7 +55,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/humidity"
-            android:layout_below="@+id/precipitation_chance"
+            android:layout_below="@+id/wind_info"
             android:layout_alignParentStart="true"
             android:layout_marginTop="13dp" />
 
@@ -56,32 +64,9 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/wind_info"
-            android:layout_below="@+id/humidity" />
-
-        <TextView
-            android:text="precipitation amt"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/precipitation_amount"
-            android:layout_alignBaseline="@+id/day_conditions"
-            android:layout_alignBottom="@+id/day_conditions"
-            android:layout_alignParentStart="true" />
-
-        <TextView
-            android:text="highOf"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/temp_high"
-            android:layout_above="@+id/day_conditions"
-            android:layout_alignParentStart="true" />
-
-        <TextView
-            android:text="lowOf"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/current_temp"
-            android:layout_above="@+id/temp_high"
-            android:layout_alignParentStart="true" />
+            android:layout_marginTop="20dp"
+            android:layout_below="@+id/day_conditions"
+            android:layout_alignEnd="@+id/feels_like" />
     </RelativeLayout>
 
 </LinearLayout>

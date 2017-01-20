@@ -1,104 +1,43 @@
 package com.artem.weather;
 
-
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 
-public class WeatherInfo {
+public class WeatherMain
+{
     private Context context;
-    private String location;
-    private String temperature;
-    private String feelsLike;
+    private String conditions;
+    private Bitmap iconToUse;
     private String windSpeed;
     private String windDirection;
-    private String windGust;
-    private String precipitationChance;
-    private String precipitationAmount;
     private String humidity;
-    private String sunrise;
-    private String sunset;
-    private Bitmap iconToUse;
-    private String dateUpdated;
-    private String lowOfTemp;
-    private String highOfTemp;
-    private String conditions;
-    private String timeOfWeather;
 
-    public WeatherInfo(Context context)
+    public WeatherMain(Context context)
     {
         this.context = context;
     }
 
-    public String getLocation() {
-        return location;
+    public Context getContext() {
+        return context;
     }
 
-    public void setLocation(String location) {
-        this.location = location;
+    public void setContext(Context context) {
+        this.context = context;
     }
 
-    public String getTemperature() {
-        return temperature;
+    public String getConditions() {
+        return conditions;
     }
 
-    public void setTemperature(String temperature) {
-        this.temperature = temperature;
-    }
-
-    public String getFeelsLike() {
-        return feelsLike;
-    }
-
-    public void setFeelsLike(String feelsLike) {
-        this.feelsLike = feelsLike;
-    }
-
-    public String getPrecipitationChance() {
-        return precipitationChance;
-    }
-
-    public void setPrecipitationChance(String precipitationChance) {
-        this.precipitationChance = precipitationChance;
-    }
-
-    public String getPrecipitationAmount() {
-        return precipitationAmount;
-    }
-
-    public void setPrecipitationAmount(String precipitationAmount) {
-        this.precipitationAmount = precipitationAmount;
-    }
-
-    public String getHumidity() {
-        return humidity;
-    }
-
-    public void setHumidity(String humidity) {
-        this.humidity = humidity;
-    }
-
-    public String getSunrise() {
-        return sunrise;
-    }
-
-    public void setSunrise(String sunrise) {
-        this.sunrise = sunrise;
-    }
-
-    public String getSunset() {
-        return sunset;
-    }
-
-    public void setSunset(String sunset) {
-        this.sunset = sunset;
+    public void setConditions(String conditions) {
+        this.conditions = conditions;
     }
 
     public Bitmap getIconToUse() {
         return iconToUse;
     }
 
-    //Sets the bitmap to the proper image depending on the conditions
     public void setIconToUse(String iconName) {
         switch(iconName)
         {
@@ -208,15 +147,10 @@ public class WeatherInfo {
                 this.iconToUse = BitmapFactory.decodeResource(context.getResources(), R.drawable.nt_tstorms);
                 break;
         }
-
     }
 
-    public String getDateUpdated() {
-        return dateUpdated;
-    }
-
-    public void setDateUpdated(String dateUpdated) {
-        this.dateUpdated = dateUpdated;
+    public void setIconToUse(Bitmap iconToUse) {
+        this.iconToUse = iconToUse;
     }
 
     public String getWindSpeed() {
@@ -235,43 +169,11 @@ public class WeatherInfo {
         this.windDirection = windDirection;
     }
 
-    public String getWindGust() {
-        return windGust;
+    public String getHumidity() {
+        return humidity;
     }
 
-    public void setWindGust(String windGust) {
-        this.windGust = windGust;
-    }
-
-    public String getLowOfTemp() {
-        return lowOfTemp;
-    }
-
-    public void setLowOfTemp(String lowOfTemp) {
-        this.lowOfTemp = lowOfTemp;
-    }
-
-    public String getHighOfTemp() {
-        return highOfTemp;
-    }
-
-    public void setHighOfTemp(String highOfTemp) {
-        this.highOfTemp = highOfTemp;
-    }
-
-    public String getConditions() {
-        return conditions;
-    }
-
-    public void setConditions(String conditions) {
-        this.conditions = conditions;
-    }
-
-    public String getTimeOfWeather() {
-        return timeOfWeather;
-    }
-
-    public void setTimeOfWeather(String timeOfWeather) {
-        this.timeOfWeather = timeOfWeather;
+    public void setHumidity(String humidity) {
+        this.humidity = humidity;
     }
 }

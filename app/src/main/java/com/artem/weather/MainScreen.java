@@ -248,8 +248,8 @@ public class MainScreen extends AppCompatActivity implements GoogleApiClient.Con
 
     private AutoCompleteArrayAdapter autoCompleteAdapter;
     private WeatherAdapter adapter;
-    private ArrayList<WeatherInfo> weatherList;
-    private WeatherInfo currentWeather;
+    private ArrayList<WeatherMain> weatherList;
+    private WeatherConditions currentWeather;
 
     private String currCity = "Winnipeg";
     private String currCountry = "Canada";
@@ -269,7 +269,7 @@ public class MainScreen extends AppCompatActivity implements GoogleApiClient.Con
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         layoutManager.setOrientation(LinearLayoutManager.HORIZONTAL);
 
-        weatherList = new ArrayList<WeatherInfo>();
+        weatherList = new ArrayList<>();
         adapter = new WeatherAdapter(this, weatherList);
 
         //Fills the view with items from weatherList
@@ -467,13 +467,10 @@ public class MainScreen extends AppCompatActivity implements GoogleApiClient.Con
             if(astronomyJSON != null)
             {
                 JSONParser parser = new JSONParser(this);
-                ArrayList<String> sunTimes = parser.parseAstronomy(astronomyJSON);
+                SunTimes sunTimes = parser.parseAstronomy(astronomyJSON);
 
-                if(sunTimes.size() > 0)
-                    sunrise.setText(sunTimes.get(0));
-
-                if(sunTimes.size() > 1)
-                    sunset.setText(sunTimes.get(1));
+                sunrise.setText(sunTimes.getSunrise());
+                sunset.setText(sunTimes.getSunset());
             }
         }
         catch (JSONException error)
@@ -495,16 +492,16 @@ public class MainScreen extends AppCompatActivity implements GoogleApiClient.Con
 
                 location.setText(currentWeather.getLocation());
 
-                temperature.setText(currentWeather.getTemperature());
-                feelsLike.setText(currentWeather.getFeelsLike());
+                temperature.setText(currentWeather.getCurrentTemp());
+                feelsLike.setText(currentWeather.getFeelsLikeTemp());
 
                 windInfo.setText(currentWeather.getWindSpeed() + currentWeather.getWindDirection() +
                         "\n" + currentWeather.getWindGust());
 
-                precipAmt.setText(currentWeather.getPrecipitationAmount());
+                precipAmt.setText(currentWeather.getPrecipitationAmt());
                 humidity.setText(currentWeather.getHumidity());
 
-                dateLastUpdated.setText(currentWeather.getDateUpdated());
+                dateLastUpdated.setText(currentWeather.getLastUpdated());
 
                 currConditions.setText(currentWeather.getConditions());
                 weatherIcon.setImageBitmap(currentWeather.getIconToUse());
@@ -531,12 +528,12 @@ public class MainScreen extends AppCompatActivity implements GoogleApiClient.Con
                 //Checks what its parsing for
                 if(parseType.equals(FORECAST) || parseType.equals(FORECAST_10DAY))
                 {
-                    ArrayList<WeatherInfo> newWeatherInfo = parser.parseDaily(weatherJSON);
+                    ArrayList<WeatherMain> newWeatherInfo = parser.parseDaily(weatherJSON);
                     adapter.swap(newWeatherInfo);
                 }
                 else if(parseType.equals(HOURLY) || parseType.equals(HOURLY_10DAY))
                 {
-                    ArrayList<WeatherInfo> newWeatherInfo = parser.parseHourly(weatherJSON);
+                    ArrayList<WeatherMain> newWeatherInfo = parser.parseHourly(weatherJSON);
                     adapter.swap(newWeatherInfo);
                 }
             }

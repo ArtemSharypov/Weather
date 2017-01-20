@@ -34,9 +34,9 @@ public class JSONParser {
     //Parses location, date the weather was last updated, temperature, what it feels like out,
     //humidity, precipitation amount, wind speed / direction / gust, and the icon to display and
     //the current conditions
-    public WeatherInfo parseConditions(JSONObject conditionsJSON)
+    public WeatherConditions parseConditions(JSONObject conditionsJSON)
     {
-        WeatherInfo weather = new WeatherInfo(context);
+        WeatherConditions weather = new WeatherConditions(context);
 
         String temperature;
         String feelsLike;
@@ -80,13 +80,13 @@ public class JSONParser {
             }
 
             weather.setLocation(displayLocation.getString("full"));
-            weather.setDateUpdated(currentObservation.getString("observation_time"));
+            weather.setLastUpdated(currentObservation.getString("observation_time"));
 
-            weather.setTemperature("Curr Temp: " + temperature);
-            weather.setFeelsLike("Feels Like: " + feelsLike);
+            weather.setConditions("Curr Temp: " + temperature);
+            weather.setFeelsLikeTemp("Feels Like: " + feelsLike);
 
             weather.setHumidity("Humidity: " + currentObservation.getString("relative_humidity") + "%");
-            weather.setPrecipitationAmount("Snow/Rain " + precipitation);
+            weather.setPrecipitationAmt("Snow/Rain " + precipitation);
 
             weather.setWindSpeed("Wind: " + wind);
             weather.setWindDirection(currentObservation.getString("wind_dir"));
@@ -106,9 +106,9 @@ public class JSONParser {
     //Parses the JSONObject specified for hourly data
     //Gets temperature, time / day, wind speed and direction, what it feels like, humidity,
     //icon to display, and the conditions outside currently
-    public ArrayList<WeatherInfo> parseHourly(JSONObject hourlyJSON)
+    public ArrayList<WeatherMain> parseHourly(JSONObject hourlyJSON)
     {
-        ArrayList<WeatherInfo> parsedHourlyData = new ArrayList<>();
+        ArrayList<WeatherMain> parsedHourlyData = new ArrayList<>();
 
         String currTemp;
         String feelsLikeTemp;
@@ -155,10 +155,10 @@ public class JSONParser {
                 else
                     timeStamp += time.getString("hour") + ":" + time.getString("min");
 
-                WeatherInfo weather = new WeatherInfo(context);
+                WeatherHourly weather = new WeatherHourly(context);
 
-                weather.setTemperature("Curr Temp: " + currTemp);
-                weather.setFeelsLike("Feels Like: " + feelsLikeTemp);
+                weather.setCurrentTemp("Curr Temp: " + currTemp);
+                weather.setFeelsLikeTemp("Feels Like: " + feelsLikeTemp);
 
                 weather.setWindSpeed("Wind: " + wind);
                 weather.setWindDirection(windDir.getString("dir"));
@@ -184,9 +184,9 @@ public class JSONParser {
     //Parses JSONObject for the daily data
     //Gets low / high temps, precipitation amount & chance, humidity, icon to display, conditions
     //that are related to the icon, wind speed & direction, and the date for that weather
-    public ArrayList<WeatherInfo> parseDaily(JSONObject dailyJSON)
+    public ArrayList<WeatherMain> parseDaily(JSONObject dailyJSON)
     {
-        ArrayList<WeatherInfo> parsedDailyData = new ArrayList<WeatherInfo>();
+        ArrayList<WeatherMain> parsedDailyData = new ArrayList<>();
 
         String tempLow;
         String tempHigh;
@@ -233,12 +233,12 @@ public class JSONParser {
                 else
                     windSpeed = wind.getString("kph") + "kph ";
 
-                WeatherInfo weather = new WeatherInfo(context);
+                WeatherDaily weather = new WeatherDaily(context);
 
                 weather.setHighOfTemp("High Of: " + tempHigh);
                 weather.setLowOfTemp("Low Of: " + tempLow);
 
-                weather.setPrecipitationAmount("Snow/Rain" + precipitation);
+                weather.setPrecipitationAmt("Snow/Rain" + precipitation);
                 weather.setPrecipitationChance("Precipitation %" + currItem.getString("pop") + "%");
 
                 weather.setHumidity("Humidity: " + currItem.getString("avehumidity") + "%");
@@ -264,9 +264,12 @@ public class JSONParser {
         return parsedDailyData;
     }
 
-    public ArrayList<String> parseAstronomy(JSONObject astronomyJSON)
+    //Switch to SunTimes object
+    //Parses for the sunrise and sunset time in a format depending on preferences and
+    //returns it
+    public SunTimes parseAstronomy(JSONObject astronomyJSON)
     {
-        ArrayList<String> sunData = new ArrayList<>();
+        SunTimes sunData = new SunTimes();
 
         try
         {
@@ -315,8 +318,8 @@ public class JSONParser {
                 sunsetTime = sunset.getString("hour") + ":" + sunset.getString("minute");
             }
 
-            sunData.add(sunriseTime);
-            sunData.add(sunsetTime);
+            sunData.setSunrise(sunriseTime);
+            sunData.setSunset(sunsetTime);
         }
         catch(JSONException error)
         {

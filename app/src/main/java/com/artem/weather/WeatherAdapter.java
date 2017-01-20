@@ -18,8 +18,6 @@ public class WeatherAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         public TextView date;
         public TextView currentTemp;
         public TextView feelsLikeTemp;
-        public TextView highOfTemp;
-        public TextView lowOfTemp;
         public TextView windInfo;
         public TextView humidity;
         public TextView currConditions;
@@ -29,10 +27,8 @@ public class WeatherAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             super(itemView);
 
             date = (TextView) itemView.findViewById(R.id.date);
-            currentTemp = (TextView) itemView.findViewById(R.id.temperature);
+            currentTemp = (TextView) itemView.findViewById(R.id.current_temp);
             feelsLikeTemp = (TextView) itemView.findViewById(R.id.feels_like);
-            highOfTemp = (TextView) itemView.findViewById(R.id.temp_high);
-            lowOfTemp = (TextView) itemView.findViewById(R.id.temp_low);
             windInfo = (TextView) itemView.findViewById(R.id.wind_info);
             humidity = (TextView) itemView.findViewById(R.id.humidity);
             icon = (ImageView) itemView.findViewById(R.id.weather_icon);
@@ -44,36 +40,36 @@ public class WeatherAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     public static class ViewHolderDaily extends RecyclerView.ViewHolder
     {
         public TextView date;
-        public TextView currentTemp;
-        public TextView feelsLikeTemp;
         public TextView highOfTemp;
         public TextView lowOfTemp;
         public TextView windInfo;
         public TextView humidity;
         public TextView currConditions;
+        public TextView precipAmt;
+        public TextView precipChance;
         public ImageView icon;
 
         public ViewHolderDaily(View itemView) {
             super(itemView);
 
             date = (TextView) itemView.findViewById(R.id.date);
-            currentTemp = (TextView) itemView.findViewById(R.id.temperature);
-            feelsLikeTemp = (TextView) itemView.findViewById(R.id.feels_like);
             highOfTemp = (TextView) itemView.findViewById(R.id.temp_high);
-            lowOfTemp = (TextView) itemView.findViewById(R.id.temp_low);
+            lowOfTemp = (TextView) itemView.findViewById(R.id.current_temp);
             windInfo = (TextView) itemView.findViewById(R.id.wind_info);
             humidity = (TextView) itemView.findViewById(R.id.humidity);
             icon = (ImageView) itemView.findViewById(R.id.weather_icon);
             currConditions = (TextView) itemView.findViewById(R.id.day_conditions);
+            precipAmt = (TextView) itemView.findViewById(R.id.precipitation_amount);
+            precipChance = (TextView) itemView.findViewById(R.id.precipitation_chance);
         }
     }
 
-    private ArrayList<WeatherInfo> weatherList;
+    private ArrayList<WeatherMain> weatherList;
     private Context context;
-    private final int HOURLY = 0;
+    private final int HOURLY = 1;
     private final int DAILY = 2;
 
-    public WeatherAdapter(Context context, ArrayList<WeatherInfo> weatherList)
+    public WeatherAdapter(Context context, ArrayList<WeatherMain> weatherList)
     {
         this.weatherList = weatherList;
         this.context = context;
@@ -84,21 +80,24 @@ public class WeatherAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType)
     {
         RecyclerView.ViewHolder viewHolder = null;
+        Context pContext = parent.getContext();
+        LayoutInflater inflater = LayoutInflater.from(pContext);
+        View weatherView;
 
+        //Switch between hourly or daily views depending on whats passed
         switch(viewType) {
             case HOURLY:
-                Context pContext = parent.getContext();
-                LayoutInflater inflater = LayoutInflater.from(pContext);
-
-                //Creates a view with the specified layout
-                View weatherView = inflater.inflate(R.layout.day_layout, parent, false);
-
+                weatherView = inflater.inflate(R.layout.hourly_layout, parent, false);
                 viewHolder = new ViewHolderHourly(weatherView);
 
                 break;
             case DAILY:
+                weatherView = inflater.inflate(R.layout.day_layout, parent, false);
+                viewHolder = new ViewHolderDaily(weatherView);
+
                 break;
         }
+
         return viewHolder;
     }
 
@@ -108,45 +107,38 @@ public class WeatherAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     {
         switch(holder.getItemViewType())
         {
+            //Layout for hourly weather
             case HOURLY:
                 ViewHolderHourly hourly = (ViewHolderHourly) holder;
-                WeatherInfo weather = weatherList.get(position);
+                WeatherHourly weatherHourly = (WeatherHourly) weatherList.get(position);
 
                 //Sets all of the information in the view
-                hourly.date.setText(weather.getTimeOfWeather());
-                hourly.currentTemp.setText(weather.getTemperature());
-                hourly.lowOfTemp.setText(weather.getLowOfTemp());
-                hourly.highOfTemp.setText(weather.getHighOfTemp());
-                hourly.windInfo.setText(weather.getWindSpeed() + weather.getWindDirection());
-                hourly.humidity.setText(weather.getHumidity());
-                hourly.icon.setImageBitmap(weather.getIconToUse());
-                hourly.currConditions.setText(weather.getConditions());
-                hourly.feelsLikeTemp.setText(weather.getFeelsLike());
-
-                //Hides textviews depending on if there was any content to be shown or not
-                if (weather.getLowOfTemp() != null)
-                    hourly.lowOfTemp.setVisibility(View.INVISIBLE);
-                else
-                    hourly.lowOfTemp.setVisibility(View.VISIBLE);
-
-                if (weather.getHighOfTemp() != null)
-                    hourly.lowOfTemp.setVisibility(View.INVISIBLE);
-                else
-                    hourly.lowOfTemp.setVisibility(View.VISIBLE);
-
-                if (weather.getTemperature() != null)
-                    hourly.lowOfTemp.setVisibility(View.INVISIBLE);
-                else
-                    hourly.lowOfTemp.setVisibility(View.VISIBLE);
-
-                if (weather.getFeelsLike() != null)
-                    hourly.lowOfTemp.setVisibility(View.INVISIBLE);
-                else
-                    hourly.lowOfTemp.setVisibility(View.VISIBLE);
+                hourly.date.setText(weatherHourly.getTimeOfWeather());
+                hourly.currentTemp.setText(weatherHourly.getCurrentTemp());
+                hourly.feelsLikeTemp.setText(weatherHourly.getFeelsLikeTemp());
+                hourly.windInfo.setText(weatherHourly.getWindSpeed() + weatherHourly.getWindDirection());
+                hourly.humidity.setText(weatherHourly.getHumidity());
+                hourly.icon.setImageBitmap(weatherHourly.getIconToUse());
+                hourly.currConditions.setText(weatherHourly.getConditions());
 
                 break;
 
+            //Layout for day by day weather
             case DAILY:
+                ViewHolderDaily daily = (ViewHolderDaily) holder;
+                WeatherDaily weatherDaily = (WeatherDaily) weatherList.get(position);
+
+                //Set the information in the view
+                daily.date.setText(weatherDaily.getTimeOfWeather());
+                daily.highOfTemp.setText(weatherDaily.getHighOfTemp());
+                daily.lowOfTemp.setText(weatherDaily.getLowOfTemp());
+                daily.windInfo.setText(weatherDaily.getWindSpeed() + weatherDaily.getWindDirection());
+                daily.humidity.setText(weatherDaily.getHumidity());
+                daily.currConditions.setText(weatherDaily.getConditions());
+                daily.precipChance.setText(weatherDaily.getPrecipitationChance());
+                daily.precipAmt.setText(weatherDaily.getPrecipitationAmt());
+                daily.icon.setImageBitmap(weatherDaily.getIconToUse());
+
                 break;
         }
     }
@@ -159,14 +151,20 @@ public class WeatherAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 
     @Override
     public int getItemViewType(int position) {
-        //Can make it change numbers depending on the instanceof (class it is) for the weather
-        //so check if instanceof hourly weather, if so return, if not return 2
-        //bam bam
-        return position % 2;
+        WeatherMain firstWeather = weatherList.get(0);
+        int viewType = 0;
+
+        //Check if its hourly or daily weather information
+        if(firstWeather instanceof WeatherHourly)
+            viewType = HOURLY;
+        else if(firstWeather instanceof WeatherDaily)
+            viewType = DAILY;
+
+        return viewType;
     }
 
     //Swaps the weather info being shown in the RecyclerView currently
-    public void swap(ArrayList<WeatherInfo> newWeatherList)
+    public void swap(ArrayList<WeatherMain> newWeatherList)
     {
         //Just in case its empty
         if(weatherList != null)

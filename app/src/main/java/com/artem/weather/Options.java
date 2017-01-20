@@ -30,7 +30,7 @@ public class Options extends AppCompatActivity{
         prefs = this.getSharedPreferences("weather", MODE_PRIVATE);
         final boolean timeFormat12Hr= prefs.getBoolean("12HourFormat", true);
         final boolean precipitationMM = prefs.getBoolean("precipitationMM", true);
-        final boolean tempInCelcius = prefs.getBoolean("temperatureCelcius", true);
+        final boolean tempInCelsius = prefs.getBoolean("temperatureCelsius", true);
         final boolean windInMPH = prefs.getBoolean("windMPH", true);
 
         prefsEditor = getPreferences(MODE_PRIVATE).edit();
@@ -98,19 +98,19 @@ public class Options extends AppCompatActivity{
                 switch(id)
                 {
                     case R.id.celcius_button:
-                        //Switch to Celcius
-                        if(!tempInCelcius)
+                        //Switch to Celsius
+                        if(!tempInCelsius)
                         {
-                            prefsEditor.putBoolean("temperatureCelcius", true);
+                            prefsEditor.putBoolean("temperatureCelsius", true);
                             prefsEditor.apply();
                         }
                         break;
 
                     case R.id.fahrenheit_button:
                         //Switch to Fahrenheit
-                        if(tempInCelcius)
+                        if(tempInCelsius)
                         {
-                            prefsEditor.putBoolean("temperatureCelcius", false);
+                            prefsEditor.putBoolean("temperatureCelsius", false);
                             prefsEditor.apply();
                         }
                         break;

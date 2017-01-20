@@ -37,14 +37,13 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 
 public class MainScreen extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener{
     //Queries WunderGround API for weather
-    private class WGQuerier extends AsyncTask<String, Void, String>
+    private class WGQuery extends AsyncTask<String, Void, String>
     {
         private String city;
         private String country;
@@ -55,7 +54,7 @@ public class MainScreen extends AppCompatActivity implements GoogleApiClient.Con
                 = "http://api.wunderground.com/api/" + APIHolder.WG_API_KEY + "/";
 
         //Used for finding the current weather in a city, country
-        public WGQuerier(String city, String country, String queryType)
+        public WGQuery(String city, String country, String queryType)
         {
             this.city = city;
             this.country = country;
@@ -63,7 +62,7 @@ public class MainScreen extends AppCompatActivity implements GoogleApiClient.Con
         }
 
         //Used for finding the city, country of a GPS location
-        public WGQuerier(double latitude, double longitude, String queryType)
+        public WGQuery(double latitude, double longitude, String queryType)
         {
             this.latitude = latitude;
             this.longitude = longitude;
@@ -121,7 +120,7 @@ public class MainScreen extends AppCompatActivity implements GoogleApiClient.Con
                     BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
 
                     StringBuffer jsonString = new StringBuffer();
-                    String temp = "";
+                    String temp;
 
                     //Read in everything
                     while ((temp = reader.readLine()) != null) {
@@ -132,11 +131,7 @@ public class MainScreen extends AppCompatActivity implements GoogleApiClient.Con
                     weatherData = weatherData + jsonString.toString();
                 }
             }
-            catch(MalformedURLException error)
-            {
-                error.printStackTrace();
-            }
-            catch(IOException error)
+            catch(IOException error) //Handles MalformedURLException as well
             {
                 error.printStackTrace();
             }
@@ -161,7 +156,7 @@ public class MainScreen extends AppCompatActivity implements GoogleApiClient.Con
     }
 
     //Used to query Google Place API for autocomplete locations
-    private class GooglePlaceQuerier extends AsyncTask<String, Void, String>
+    private class GooglePlaceQuery extends AsyncTask<String, Void, String>
     {
         private final String INITIAL_CALL ="https://maps.googleapis.com/maps/api/place";
         private final String TYPE_AUTO_COMPLETE = "/autocomplete";
@@ -169,7 +164,7 @@ public class MainScreen extends AppCompatActivity implements GoogleApiClient.Con
 
         private String input;
 
-        public GooglePlaceQuerier(String input)
+        public GooglePlaceQuery(String input)
         {
             this.input = input;
         }
@@ -195,7 +190,7 @@ public class MainScreen extends AppCompatActivity implements GoogleApiClient.Con
                     BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
 
                     StringBuffer jsonString = new StringBuffer();
-                    String temp = "";
+                    String temp;
 
                     //Read in everything
                     while ((temp = reader.readLine()) != null) {
@@ -206,11 +201,7 @@ public class MainScreen extends AppCompatActivity implements GoogleApiClient.Con
                     reader.close();
                 }
             }
-            catch(MalformedURLException error)
-            {
-                error.printStackTrace();
-            }
-            catch(IOException error)
+            catch(IOException error) //Catches MalformedURLException as well
             {
                 error.printStackTrace();
             }
@@ -219,9 +210,9 @@ public class MainScreen extends AppCompatActivity implements GoogleApiClient.Con
         }
 
         @Override
-        protected void onPostExecute(String autoCompleteJSON) {
-            super.onPostExecute(autoCompleteJSON);
-            autoCompleteAdapter.getFilter().filter(autoCompleteJSON);
+        protected void onPostExecute(String locations) {
+            super.onPostExecute(locations);
+            autoCompleteAdapter.getFilter().filter(locations);
         }
     }
 
@@ -258,7 +249,6 @@ public class MainScreen extends AppCompatActivity implements GoogleApiClient.Con
     private AutoCompleteArrayAdapter autoCompleteAdapter;
     private WeatherAdapter adapter;
     private ArrayList<WeatherInfo> weatherList;
-    private ArrayList<String> locationList;
     private WeatherInfo currentWeather;
 
     private String currCity = "Winnipeg";
@@ -308,55 +298,7 @@ public class MainScreen extends AppCompatActivity implements GoogleApiClient.Con
 
         current_mode = FORECAST; //keep track of the current mode
 
-        //Changes mode based on the current display in the forecasts
-        forecast3Day.setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View view) {
-                if(!current_mode.equals(FORECAST))
-                {
-                    new WGQuerier(currCity, currCountry, FORECAST).execute();
-                    current_mode = FORECAST;
-                }
-            }
-        });
-
-        forecast10Day.setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View view) {
-                if(!current_mode.equals(FORECAST_10DAY))
-                {
-                    new WGQuerier(currCity, currCountry, FORECAST_10DAY).execute();
-                    current_mode = FORECAST_10DAY;
-                }
-            }
-        });
-
-        hourly48Hours.setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View view) {
-                if(!current_mode.equals(HOURLY))
-                {
-                    new WGQuerier(currCity, currCountry, HOURLY).execute();
-                    current_mode = HOURLY;
-                }
-            }
-        });
-
-        hourly10Days.setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View view) {
-                if(!current_mode.equals(HOURLY_10DAY))
-                {
-                    new WGQuerier(currCity, currCountry, HOURLY_10DAY).execute();
-                    current_mode = HOURLY_10DAY;
-                }
-            }
-        });
-
+        setModeButtons();
         populateDisplays();
 
         //Checks if the device has google play services / it works before building
@@ -364,83 +306,15 @@ public class MainScreen extends AppCompatActivity implements GoogleApiClient.Con
             buildGoogleApiClient();
     }
 
-    //Tries to find the current location
-    private void findLocation()
-    {
-        try
-        {
-            lastLocation = LocationServices.FusedLocationApi.getLastLocation(googleApiClient);
-        }
-        catch(SecurityException error)
-        {
-            Toast.makeText(getApplicationContext(),
-                    "Couldn't find the location, make sure GPS is enabled", Toast.LENGTH_LONG)
-                    .show();
-        }
-
-        //Checks if there is a location that can be queried
-        if(lastLocation != null)
-        {
-            double latitude = lastLocation.getLatitude();
-            double longitude = lastLocation.getLongitude();
-
-            new WGQuerier(latitude, longitude, GEOLOOKUP).execute();
-        }
-        else
-        {
-            Toast.makeText(getApplicationContext(),
-                    "Couldn't find the location, make sure GPS is enabled", Toast.LENGTH_LONG)
-                    .show();
-        }
-    }
-
-    //Builds the API client for allowing locations
-    private synchronized void buildGoogleApiClient()
-    {
-        googleApiClient = new GoogleApiClient.Builder(this)
-                .addConnectionCallbacks(this)
-                .addOnConnectionFailedListener(this)
-                .addApi(LocationServices.API).build();
-
-        googleApiClient.connect();
-    }
-
-    //Makes sure play services are enabled on the device
-    private boolean checkPlayServices()
-    {
-        int resultCode = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(this);
-        boolean works = true;
-
-        //Checks that it worked
-        if(resultCode != ConnectionResult.SUCCESS)
-        {
-            if(GoogleApiAvailability.getInstance().isUserResolvableError(resultCode))
-            {
-                GoogleApiAvailability.getInstance().getErrorDialog(this, resultCode,
-                        PLAY_SERVICES_RESOLUTION_REQUEST).show();
-            }
-            else //Not a supported device
-            {
-                Toast.makeText(getApplicationContext(),
-                        "This device is not supported.", Toast.LENGTH_LONG)
-                        .show();
-                finish();
-            }
-            works = false;
-        }
-
-        return works;
-    }
-
-    //Creates the toolbar
     @Override
     public boolean onCreateOptionsMenu(Menu menu)
     {
         getMenuInflater().inflate(R.menu.main, menu);
 
         View view = menu.findItem(R.id.search_auto).getActionView();
-
         autoCompleteText = (AutoCompleteTextView) view.findViewById(R.id.search);
+
+        //Adds the api query to the text whenever something gets changed
         autoCompleteText.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
@@ -449,7 +323,7 @@ public class MainScreen extends AppCompatActivity implements GoogleApiClient.Con
 
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                new GooglePlaceQuerier(charSequence.toString()).execute();
+                new GooglePlaceQuery(charSequence.toString()).execute();
             }
 
             @Override
@@ -458,7 +332,7 @@ public class MainScreen extends AppCompatActivity implements GoogleApiClient.Con
             }
         });
 
-        autoCompleteAdapter = new AutoCompleteArrayAdapter(this, android.R.layout.simple_list_item_1, locationList);
+        autoCompleteAdapter = new AutoCompleteArrayAdapter(this, android.R.layout.simple_list_item_1, null);
         autoCompleteText.setAdapter(autoCompleteAdapter);
 
         //Sets the texts in it, allowing the search
@@ -500,7 +374,8 @@ public class MainScreen extends AppCompatActivity implements GoogleApiClient.Con
                     populateDisplays();
                 }
 
-                location.setText(currCity + currCountry);
+                String locationText = currCity + currCountry;
+                location.setText(locationText);
 
                 break;
             case R.id.options_button: //Switches to Options layout
@@ -514,16 +389,59 @@ public class MainScreen extends AppCompatActivity implements GoogleApiClient.Con
         return result;
     }
 
-    //Queries the data for forecast, curr conditions and astronomy info
-    private void populateDisplays()
+    //Changes mode based on the current display in the forecasts and what is clicked
+    private void setModeButtons()
     {
-        //second query changes based on preferences, forecast will be default
-        new WGQuerier(currCity, currCountry, CONDITIONS).execute();
-        new WGQuerier(currCity, currCountry, FORECAST).execute();
-        new WGQuerier(currCity, currCountry, ASTRONOMY).execute();
+        forecast3Day.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view) {
+                if(!current_mode.equals(FORECAST))
+                {
+                    new WGQuery(currCity, currCountry, FORECAST).execute();
+                    current_mode = FORECAST;
+                }
+            }
+        });
+
+        forecast10Day.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view) {
+                if(!current_mode.equals(FORECAST_10DAY))
+                {
+                    new WGQuery(currCity, currCountry, FORECAST_10DAY).execute();
+                    current_mode = FORECAST_10DAY;
+                }
+            }
+        });
+
+        hourly48Hours.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view) {
+                if(!current_mode.equals(HOURLY))
+                {
+                    new WGQuery(currCity, currCountry, HOURLY).execute();
+                    current_mode = HOURLY;
+                }
+            }
+        });
+
+        hourly10Days.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view) {
+                if(!current_mode.equals(HOURLY_10DAY))
+                {
+                    new WGQuery(currCity, currCountry, HOURLY_10DAY).execute();
+                    current_mode = HOURLY_10DAY;
+                }
+            }
+        });
     }
 
-    //checks if the phones connected to the internet
+    //checks if the phone is connected to the internet
     private boolean isNetworkAvailable() {
         ConnectivityManager connectivityManager
                 = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -531,22 +449,31 @@ public class MainScreen extends AppCompatActivity implements GoogleApiClient.Con
         return activeNetworkInfo != null && activeNetworkInfo.isConnected();
     }
 
+
+    //Queries the data for forecast, curr conditions and astronomy info
+    private void populateDisplays()
+    {
+        new WGQuery(currCity, currCountry, CONDITIONS).execute();
+        new WGQuery(currCity, currCountry, FORECAST).execute();
+        new WGQuery(currCity, currCountry, ASTRONOMY).execute();
+    }
+
     //Sets the sunrise and sunset time for that city
-    private void populateSunData(String astronomyJSON)
+    private void populateSunData(String astronomyText)
     {
         try {
-            JSONObject astronomyData = new JSONObject(astronomyJSON);
+            JSONObject astronomyJSON = new JSONObject(astronomyText);
 
-            if(astronomyData != null)
+            if(astronomyJSON != null)
             {
                 JSONParser parser = new JSONParser(this);
-                ArrayList<String> sunData = parser.parseAstronomy(astronomyData);
+                ArrayList<String> sunTimes = parser.parseAstronomy(astronomyJSON);
 
-                if(sunData.size() > 0)
-                    sunrise.setText(sunData.get(0));
+                if(sunTimes.size() > 0)
+                    sunrise.setText(sunTimes.get(0));
 
-                if(sunData.size() > 1)
-                    sunset.setText(sunData.get(1));
+                if(sunTimes.size() > 1)
+                    sunset.setText(sunTimes.get(1));
             }
         }
         catch (JSONException error)
@@ -556,15 +483,15 @@ public class MainScreen extends AppCompatActivity implements GoogleApiClient.Con
     }
 
     //Populates the main textfields / information
-    private void populateInfo(String weatherJSON)
+    private void populateInfo(String weatherText)
     {
         try {
-            JSONObject weather = new JSONObject(weatherJSON);
+            JSONObject weatherJSON = new JSONObject(weatherText);
 
             //Fills in all of the necessary info
-            if(weather != null) {
+            if(weatherJSON != null) {
                 JSONParser parser = new JSONParser(this);
-                currentWeather = parser.parseConditions(weather);
+                currentWeather = parser.parseConditions(weatherJSON);
 
                 location.setText(currentWeather.getLocation());
 
@@ -582,10 +509,6 @@ public class MainScreen extends AppCompatActivity implements GoogleApiClient.Con
                 currConditions.setText(currentWeather.getConditions());
                 weatherIcon.setImageBitmap(currentWeather.getIconToUse());
             }
-            else
-            {
-                location.setText("RIP");
-            }
         }
         catch(JSONException error)
         {
@@ -595,25 +518,25 @@ public class MainScreen extends AppCompatActivity implements GoogleApiClient.Con
 
     //Changes whats currently displayed in the RecyclerView for upcoming weather
     //Calls the parser with the according method to read the data and then swaps the adapter
-    private void populateDailyHourly(String weatherJSON, String parseType)
+    private void populateDailyHourly(String weatherText, String parseType)
     {
         try
         {
-            JSONObject weather = new JSONObject(weatherJSON);
+            JSONObject weatherJSON = new JSONObject(weatherText);
 
-            if(weather != null)
+            if(weatherJSON != null)
             {
                 JSONParser parser = new JSONParser(this);
 
                 //Checks what its parsing for
                 if(parseType.equals(FORECAST) || parseType.equals(FORECAST_10DAY))
                 {
-                    ArrayList<WeatherInfo> newWeatherInfo = parser.parseDaily(weather);
+                    ArrayList<WeatherInfo> newWeatherInfo = parser.parseDaily(weatherJSON);
                     adapter.swap(newWeatherInfo);
                 }
                 else if(parseType.equals(HOURLY) || parseType.equals(HOURLY_10DAY))
                 {
-                    ArrayList<WeatherInfo> newWeatherInfo = parser.parseHourly(weather);
+                    ArrayList<WeatherInfo> newWeatherInfo = parser.parseHourly(weatherJSON);
                     adapter.swap(newWeatherInfo);
                 }
             }
@@ -624,22 +547,52 @@ public class MainScreen extends AppCompatActivity implements GoogleApiClient.Con
         }
     }
 
-    //Tries to get the city and country from the location JSON
-    //then calls to populate the information
-    private void handleCoordinates(String locationJSON)
+    //Tries to find the current location
+    private void findLocation()
     {
         try
         {
-            JSONObject locationName = new JSONObject(locationJSON);
-            JSONObject location = locationName.getJSONObject("location");
+            lastLocation = LocationServices.FusedLocationApi.getLastLocation(googleApiClient);
+        }
+        catch(SecurityException error)
+        {
+            Toast.makeText(getApplicationContext(),
+                    "Couldn't find the location, make sure GPS is enabled", Toast.LENGTH_LONG)
+                    .show();
+        }
 
-            String tempCountry = location.getString("country_name");
+        //Checks if there is a location that can be queried
+        if(lastLocation != null)
+        {
+            double latitude = lastLocation.getLatitude();
+            double longitude = lastLocation.getLongitude();
+
+            new WGQuery(latitude, longitude, GEOLOOKUP).execute();
+        }
+        else
+        {
+            Toast.makeText(getApplicationContext(),
+                    "Couldn't find the location, make sure GPS is enabled", Toast.LENGTH_LONG)
+                    .show();
+        }
+    }
+
+    //Tries to get the city and country from the location JSON
+    //then calls to populate the information
+    private void handleCoordinates(String placesText)
+    {
+        try
+        {
+            JSONObject placesJSON = new JSONObject(placesText);
+            JSONObject locationJSON = placesJSON.getJSONObject("location");
+
+            String tempCountry = locationJSON.getString("country_name");
 
             //USA uses country based on state, not the country itself
             if(tempCountry.equals("USA"))
             {
-                currCountry = location.getString("state");
-                currCity = location.getString("city");
+                currCountry = locationJSON.getString("state");
+                currCity = locationJSON.getString("city");
             }
             else
             {
@@ -647,7 +600,7 @@ public class MainScreen extends AppCompatActivity implements GoogleApiClient.Con
 
                 //Wunderground handles Canada weird, parts of the city are called city.
                 //So it splits tz_long which is America/City in canada
-                String tempCity = location.getString("tz_long");
+                String tempCity = locationJSON.getString("tz_long");
                 String[] split = tempCity.split("/");
 
                 currCity = split[split.length - 1]; //City should be at the end
@@ -661,6 +614,44 @@ public class MainScreen extends AppCompatActivity implements GoogleApiClient.Con
         {
             error.printStackTrace();
         }
+    }
+
+    //Builds the API client for allowing location services
+    private synchronized void buildGoogleApiClient()
+    {
+        googleApiClient = new GoogleApiClient.Builder(this)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .addApi(LocationServices.API).build();
+
+        googleApiClient.connect();
+    }
+
+    //Makes sure play services are enabled on the device
+    private boolean checkPlayServices()
+    {
+        int resultCode = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(this);
+        boolean works = true;
+
+        //Checks that it worked
+        if(resultCode != ConnectionResult.SUCCESS)
+        {
+            if(GoogleApiAvailability.getInstance().isUserResolvableError(resultCode))
+            {
+                GoogleApiAvailability.getInstance().getErrorDialog(this, resultCode,
+                        PLAY_SERVICES_RESOLUTION_REQUEST).show();
+            }
+            else //Not a supported device
+            {
+                Toast.makeText(getApplicationContext(),
+                        "This device is not supported.", Toast.LENGTH_LONG)
+                        .show();
+                finish();
+            }
+            works = false;
+        }
+
+        return works;
     }
 
     @Override

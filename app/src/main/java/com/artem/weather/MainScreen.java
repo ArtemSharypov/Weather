@@ -2,23 +2,33 @@ package com.artem.weather;
 
 import android.content.Context;
 import android.content.Intent;
+import android.location.Location;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GoogleApiAvailability;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationServices;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -29,37 +39,37 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 
-public class MainScreen extends AppCompatActivity {
-
-    private class DataQuerier extends AsyncTask<String, Void, String>
+public class MainScreen extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener{
+    //Queries WunderGround API for weather
+    private class WGQuerier extends AsyncTask<String, Void, String>
     {
         private String city;
         private String country;
         private String queryType;
-        private long latitude;
-        private long longitude;
-        private final String INITIAL_CALL;
+        private double latitude;
+        private double longitude;
+        private final String INITIAL_CALL
+                = "http://api.wunderground.com/api/" + APIHolder.WG_API_KEY + "/";
 
-        public DataQuerier(String city, String country, String queryType)
+        //Used for finding the current weather in a city, country
+        public WGQuerier(String city, String country, String queryType)
         {
-            INITIAL_CALL = "http://api.wunderground.com/api/" + APIHolder.API_KEY + "/";
             this.city = city;
             this.country = country;
             this.queryType = queryType;
         }
 
-        //Longitude/latitude need a initial geolookup call THEN can do the normal call
-        public DataQuerier(long latitude, long longitude, String queryType)
+        //Used for finding the city, country of a GPS location
+        public WGQuerier(double latitude, double longitude, String queryType)
         {
-            INITIAL_CALL = "http://api.wunderground.com/api/" + APIHolder.API_KEY + "/";
             this.latitude = latitude;
             this.longitude = longitude;
             this.queryType = queryType;
         }
 
-        //Downloads the JSONObject file in the background
         @Override
         protected String doInBackground(String... strings)
         {
@@ -67,7 +77,8 @@ public class MainScreen extends AppCompatActivity {
             URL url;
             String urlInfo = INITIAL_CALL;
 
-            //Tries to connect to the API and get the conditions for that city
+            //Tries to connect to the API and get the conditions for that city or find the city
+            //based on location
             try
             {
                 //Can't download without any internet connection
@@ -77,28 +88,33 @@ public class MainScreen extends AppCompatActivity {
                     switch(queryType)
                     {
                         case CONDITIONS:
-                            urlInfo += "conditions/q/";
+                            urlInfo += "conditions";
                             break;
                         case FORECAST:
-                            urlInfo += "forecast/q/";
+                            urlInfo += "forecast";
                             break;
                         case FORECAST_10DAY:
-                            urlInfo += "forecast10day/q/";
+                            urlInfo += "forecast10day";
                             break;
                         case HOURLY:
-                            urlInfo += "hourly/q/";
+                            urlInfo += "hourly";
                             break;
                         case HOURLY_10DAY:
-                            urlInfo += "hourly10day/q/";
+                            urlInfo += "hourly10day";
                             break;
-                        case AUTO_COMPLETE:
-                            urlInfo = "http://autocomplete.wunderground.com/aq?query=" + city;
+                        case ASTRONOMY:
+                            urlInfo += "astronomy";
+                            break;
+                        case GEOLOOKUP:
+                            urlInfo += "geolookup";
                             break;
                     }
 
-                    //need to find a better place or way to do it without code repetition
-                    if(!queryType.equals(AUTO_COMPLETE))
-                        urlInfo += country + "/" + city + ".json";
+                    //Changes URL and necessary info depending on query type
+                    if(queryType.equals(GEOLOOKUP))
+                        urlInfo += "/q/" + latitude + "," + longitude + ".json";
+                    else
+                        urlInfo += "/q/" + country + "/" + city + ".json";
 
                     url = new URL(urlInfo);
                     HttpURLConnection connection = (HttpURLConnection) url.openConnection();
@@ -133,14 +149,79 @@ public class MainScreen extends AppCompatActivity {
             super.onPostExecute(data);
 
             //Check what the query was for and populate that one
-            if(queryType.equals(CONDITIONS))
-            {
+            if(queryType.equals(ASTRONOMY))
+                populateSunData(data);
+            else if(queryType.equals(CONDITIONS))
                 populateInfo(data);
-            }
+            else if(queryType.equals(GEOLOOKUP)) //finds the location before data population
+                handleCoordinates(data);
             else
-            {
                 populateDailyHourly(data, queryType);
+        }
+    }
+
+    //Used to query Google Place API for autocomplete locations
+    private class GooglePlaceQuerier extends AsyncTask<String, Void, String>
+    {
+        private final String INITIAL_CALL ="https://maps.googleapis.com/maps/api/place";
+        private final String TYPE_AUTO_COMPLETE = "/autocomplete";
+        private final String FILE_TYPE = "/json";
+
+        private String input;
+
+        public GooglePlaceQuerier(String input)
+        {
+            this.input = input;
+        }
+
+        @Override
+        protected String doInBackground(String... strings) {
+            URL url;
+            String urlInfo;
+            String locationData = "";
+
+            try
+            {
+                //Can't download without any internet connection
+                if(isNetworkAvailable())
+                {
+                    urlInfo =  INITIAL_CALL + TYPE_AUTO_COMPLETE + FILE_TYPE;
+                    urlInfo += "?key=" + APIHolder.GOOGLE_API_KEY;
+                    urlInfo += "&types=(cities)"; //need a way to better filter for cities / country
+                    urlInfo += "&input=" + URLEncoder.encode(input, "utf8");
+
+                    url = new URL(urlInfo);
+                    HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+
+                    StringBuffer jsonString = new StringBuffer();
+                    String temp = "";
+
+                    //Read in everything
+                    while ((temp = reader.readLine()) != null) {
+                        jsonString.append(temp).append("\n");
+                    }
+
+                    locationData = jsonString.toString();
+                    reader.close();
+                }
             }
+            catch(MalformedURLException error)
+            {
+                error.printStackTrace();
+            }
+            catch(IOException error)
+            {
+                error.printStackTrace();
+            }
+
+            return locationData;
+        }
+
+        @Override
+        protected void onPostExecute(String autoCompleteJSON) {
+            super.onPostExecute(autoCompleteJSON);
+            autoCompleteAdapter.getFilter().filter(autoCompleteJSON);
         }
     }
 
@@ -150,7 +231,6 @@ public class MainScreen extends AppCompatActivity {
     private TextView feelsLike;
     private TextView windInfo;
     private TextView precipAmt;
-    private TextView precipChance;
     private TextView humidity;
     private TextView sunrise;
     private TextView sunset;
@@ -164,6 +244,18 @@ public class MainScreen extends AppCompatActivity {
     private Button hourly10Days;
     private AutoCompleteTextView autoCompleteText;
 
+    //Query Types / Modes
+    private final String CONDITIONS = "conditions";
+    private final String FORECAST = "forecast";
+    private final String FORECAST_10DAY = "forecast10day";
+    private final String HOURLY = "hourly";
+    private final String HOURLY_10DAY = "hourly10day";
+    private final String ASTRONOMY = "astronomy";
+    private final String GEOLOOKUP = "geolookup";
+
+    private String current_mode; //Data thats displayed in the recyclerview
+
+    private AutoCompleteArrayAdapter autoCompleteAdapter;
     private WeatherAdapter adapter;
     private ArrayList<WeatherInfo> weatherList;
     private ArrayList<String> locationList;
@@ -171,21 +263,10 @@ public class MainScreen extends AppCompatActivity {
 
     private String currCity = "Winnipeg";
     private String currCountry = "Canada";
+    private Location lastLocation;
 
-    private final int FORECAST_3DAY_MODE = 1;
-    private final int FORECAST_10DAY_MODE = 2;
-    private final int HOURLY_2DAY_MODE = 3;
-    private final int HOURLY_10DAY_MODE = 4;
-
-    private final String CONDITIONS = "conditions";
-    private final String FORECAST = "forecast";
-    private final String FORECAST_10DAY = "forecast10day";
-    private final String HOURLY = "hourly";
-    private final String HOURLY_10DAY = "hourly10day";
-
-    private final String AUTO_COMPLETE = "autocomplete";
-
-    private int current_mode; //Data thats displayed in the recyclerview
+    private GoogleApiClient googleApiClient;
+    private final static int PLAY_SERVICES_RESOLUTION_REQUEST = 1000;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -213,7 +294,6 @@ public class MainScreen extends AppCompatActivity {
         feelsLike = (TextView) findViewById(R.id.feels_like);
         windInfo = (TextView) findViewById(R.id.wind_info);
         precipAmt = (TextView) findViewById(R.id.precipitation_amount);
-        precipChance = (TextView) findViewById(R.id.precipitation_chance);
         humidity = (TextView) findViewById(R.id.humidity);
         sunrise = (TextView) findViewById(R.id.sunrise);
         sunset = (TextView) findViewById(R.id.sunset);
@@ -226,16 +306,17 @@ public class MainScreen extends AppCompatActivity {
         hourly48Hours = (Button) findViewById(R.id.hourly_2day);
         hourly10Days = (Button) findViewById(R.id.hourly_10day);
 
-        current_mode = FORECAST_3DAY_MODE; //keep track of the current mode
+        current_mode = FORECAST; //keep track of the current mode
 
+        //Changes mode based on the current display in the forecasts
         forecast3Day.setOnClickListener(new View.OnClickListener()
         {
             @Override
             public void onClick(View view) {
-                if(current_mode != FORECAST_3DAY_MODE)
+                if(!current_mode.equals(FORECAST))
                 {
-                    new DataQuerier(currCity, currCountry, FORECAST).execute();
-                    current_mode = FORECAST_3DAY_MODE;
+                    new WGQuerier(currCity, currCountry, FORECAST).execute();
+                    current_mode = FORECAST;
                 }
             }
         });
@@ -244,10 +325,10 @@ public class MainScreen extends AppCompatActivity {
         {
             @Override
             public void onClick(View view) {
-                if(current_mode != FORECAST_10DAY_MODE)
+                if(!current_mode.equals(FORECAST_10DAY))
                 {
-                    new DataQuerier(currCity, currCountry, FORECAST_10DAY).execute();
-                    current_mode = FORECAST_10DAY_MODE;
+                    new WGQuerier(currCity, currCountry, FORECAST_10DAY).execute();
+                    current_mode = FORECAST_10DAY;
                 }
             }
         });
@@ -256,10 +337,10 @@ public class MainScreen extends AppCompatActivity {
         {
             @Override
             public void onClick(View view) {
-                if(current_mode != HOURLY_2DAY_MODE)
+                if(!current_mode.equals(HOURLY))
                 {
-                    new DataQuerier(currCity, currCountry, HOURLY).execute();
-                    current_mode = HOURLY_2DAY_MODE;
+                    new WGQuerier(currCity, currCountry, HOURLY).execute();
+                    current_mode = HOURLY;
                 }
             }
         });
@@ -268,18 +349,87 @@ public class MainScreen extends AppCompatActivity {
         {
             @Override
             public void onClick(View view) {
-                if(current_mode != HOURLY_10DAY_MODE)
+                if(!current_mode.equals(HOURLY_10DAY))
                 {
-                    new DataQuerier(currCity, currCountry, HOURLY_10DAY).execute();
-                    current_mode = HOURLY_10DAY_MODE;
+                    new WGQuerier(currCity, currCountry, HOURLY_10DAY).execute();
+                    current_mode = HOURLY_10DAY;
                 }
             }
         });
 
-        //will change depending on the city, just a default location for now.
-        //second query changes based on preferences, forecast will be default
-        new DataQuerier(currCity, currCountry, CONDITIONS).execute();
-        new DataQuerier(currCity, currCountry, FORECAST).execute(); //will change depending on preferences / options
+        populateDisplays();
+
+        //Checks if the device has google play services / it works before building
+        if(checkPlayServices())
+            buildGoogleApiClient();
+    }
+
+    //Tries to find the current location
+    private void findLocation()
+    {
+        try
+        {
+            lastLocation = LocationServices.FusedLocationApi.getLastLocation(googleApiClient);
+        }
+        catch(SecurityException error)
+        {
+            Toast.makeText(getApplicationContext(),
+                    "Couldn't find the location, make sure GPS is enabled", Toast.LENGTH_LONG)
+                    .show();
+        }
+
+        //Checks if there is a location that can be queried
+        if(lastLocation != null)
+        {
+            double latitude = lastLocation.getLatitude();
+            double longitude = lastLocation.getLongitude();
+
+            new WGQuerier(latitude, longitude, GEOLOOKUP).execute();
+        }
+        else
+        {
+            Toast.makeText(getApplicationContext(),
+                    "Couldn't find the location, make sure GPS is enabled", Toast.LENGTH_LONG)
+                    .show();
+        }
+    }
+
+    //Builds the API client for allowing locations
+    private synchronized void buildGoogleApiClient()
+    {
+        googleApiClient = new GoogleApiClient.Builder(this)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .addApi(LocationServices.API).build();
+
+        googleApiClient.connect();
+    }
+
+    //Makes sure play services are enabled on the device
+    private boolean checkPlayServices()
+    {
+        int resultCode = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(this);
+        boolean works = true;
+
+        //Checks that it worked
+        if(resultCode != ConnectionResult.SUCCESS)
+        {
+            if(GoogleApiAvailability.getInstance().isUserResolvableError(resultCode))
+            {
+                GoogleApiAvailability.getInstance().getErrorDialog(this, resultCode,
+                        PLAY_SERVICES_RESOLUTION_REQUEST).show();
+            }
+            else //Not a supported device
+            {
+                Toast.makeText(getApplicationContext(),
+                        "This device is not supported.", Toast.LENGTH_LONG)
+                        .show();
+                finish();
+            }
+            works = false;
+        }
+
+        return works;
     }
 
     //Creates the toolbar
@@ -289,10 +439,26 @@ public class MainScreen extends AppCompatActivity {
         getMenuInflater().inflate(R.menu.main, menu);
 
         View view = menu.findItem(R.id.search_auto).getActionView();
-        autoCompleteText = (AutoCompleteTextView) view.findViewById(R.id.search);
 
-        ArrayAdapter<String> autoCompleteAdapter
-                = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, locationList);
+        autoCompleteText = (AutoCompleteTextView) view.findViewById(R.id.search);
+        autoCompleteText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                new GooglePlaceQuerier(charSequence.toString()).execute();
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+
+            }
+        });
+
+        autoCompleteAdapter = new AutoCompleteArrayAdapter(this, android.R.layout.simple_list_item_1, locationList);
         autoCompleteText.setAdapter(autoCompleteAdapter);
 
         //Sets the texts in it, allowing the search
@@ -313,30 +479,48 @@ public class MainScreen extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         boolean result = super.onOptionsItemSelected(item);
 
+        //Checks what was clicked
         switch(item.getItemId())
         {
-            case R.id.search_button:
-                //Format is City, Country
-                String[] location = autoCompleteText.getText().toString().split(",");
-                location[0].trim();
-                location[1].trim();
+            case R.id.search_button: //Queries for the city entered
+                String searchItem = autoCompleteText.getText().toString();
+                String[] splitItems = searchItem.split(",");
 
-                currCity = location[0];
-                currCountry = location[1];
+                currCity = splitItems[0].trim();
 
-                new DataQuerier(currCity, currCountry, CONDITIONS);
-                new DataQuerier(currCity, currCountry, FORECAST);
+                //checks how many words there are, normally city, country
+                if(splitItems.length == 2)
+                {
+                    currCountry = splitItems[1].trim();
+                    populateDisplays();
+                }
+                else if(splitItems.length == 3)
+                {
+                    currCountry = splitItems[2].trim();
+                    populateDisplays();
+                }
+
+                location.setText(currCity + currCountry);
 
                 break;
-            case R.id.options_button:
+            case R.id.options_button: //Switches to Options layout
                 Intent intent = new Intent(this, Options.class);
                 startActivity(intent);
                 break;
+            case R.id.gps_button:
+                findLocation();
         }
 
-        //other place but there needs to be onclick for the pop ups for the auto complete to query based on the selection
-
         return result;
+    }
+
+    //Queries the data for forecast, curr conditions and astronomy info
+    private void populateDisplays()
+    {
+        //second query changes based on preferences, forecast will be default
+        new WGQuerier(currCity, currCountry, CONDITIONS).execute();
+        new WGQuerier(currCity, currCountry, FORECAST).execute();
+        new WGQuerier(currCity, currCountry, ASTRONOMY).execute();
     }
 
     //checks if the phones connected to the internet
@@ -345,6 +529,30 @@ public class MainScreen extends AppCompatActivity {
                 = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
         return activeNetworkInfo != null && activeNetworkInfo.isConnected();
+    }
+
+    //Sets the sunrise and sunset time for that city
+    private void populateSunData(String astronomyJSON)
+    {
+        try {
+            JSONObject astronomyData = new JSONObject(astronomyJSON);
+
+            if(astronomyData != null)
+            {
+                JSONParser parser = new JSONParser(this);
+                ArrayList<String> sunData = parser.parseAstronomy(astronomyData);
+
+                if(sunData.size() > 0)
+                    sunrise.setText(sunData.get(0));
+
+                if(sunData.size() > 1)
+                    sunset.setText(sunData.get(1));
+            }
+        }
+        catch (JSONException error)
+        {
+            error.printStackTrace();
+        }
     }
 
     //Populates the main textfields / information
@@ -356,7 +564,7 @@ public class MainScreen extends AppCompatActivity {
             //Fills in all of the necessary info
             if(weather != null) {
                 JSONParser parser = new JSONParser(this);
-                currentWeather = parser.parseForWeather(weather);
+                currentWeather = parser.parseConditions(weather);
 
                 location.setText(currentWeather.getLocation());
 
@@ -385,7 +593,8 @@ public class MainScreen extends AppCompatActivity {
         }
     }
 
-    //might just split it into 2 methods, have to check it either way
+    //Changes whats currently displayed in the RecyclerView for upcoming weather
+    //Calls the parser with the according method to read the data and then swaps the adapter
     private void populateDailyHourly(String weatherJSON, String parseType)
     {
         try
@@ -415,5 +624,77 @@ public class MainScreen extends AppCompatActivity {
         }
     }
 
-    //on click for buttons, buttons change the content in the recyclerView
+    //Tries to get the city and country from the location JSON
+    //then calls to populate the information
+    private void handleCoordinates(String locationJSON)
+    {
+        try
+        {
+            JSONObject locationName = new JSONObject(locationJSON);
+            JSONObject location = locationName.getJSONObject("location");
+
+            String tempCountry = location.getString("country_name");
+
+            //USA uses country based on state, not the country itself
+            if(tempCountry.equals("USA"))
+            {
+                currCountry = location.getString("state");
+                currCity = location.getString("city");
+            }
+            else
+            {
+                currCountry = tempCountry;
+
+                //Wunderground handles Canada weird, parts of the city are called city.
+                //So it splits tz_long which is America/City in canada
+                String tempCity = location.getString("tz_long");
+                String[] split = tempCity.split("/");
+
+                currCity = split[split.length - 1]; //City should be at the end
+            }
+            //Replaces spaces with underscores to make the query still work
+            currCity = currCity.replaceAll(" ", "_");
+
+            populateDisplays();
+        }
+        catch(JSONException error)
+        {
+            error.printStackTrace();
+        }
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+        if(googleApiClient != null)
+            googleApiClient.connect();
+    }
+
+    @Override
+    public void onConnected(@Nullable Bundle bundle) {
+        //Tries to get the last location
+        try
+        {
+            lastLocation = LocationServices.FusedLocationApi.getLastLocation(googleApiClient);
+        }
+        catch(SecurityException error)
+        {
+            Toast.makeText(getApplicationContext(),
+                    "Couldn't find the location, make sure GPS is enabled", Toast.LENGTH_LONG)
+                    .show();
+        }
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+        googleApiClient.connect();
+    }
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+        Toast.makeText(getApplicationContext(),
+                "Failed to connect", Toast.LENGTH_LONG)
+                .show();
+    }
 }

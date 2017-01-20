@@ -84,14 +84,6 @@
                 android:layout_alignParentStart="true" />
 
             <TextView
-                android:text="precipitation %"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/precipitation_chance"
-                android:layout_above="@+id/precipitation_amount"
-                android:layout_alignParentStart="true" />
-
-            <TextView
                 android:text="Humidity"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -101,7 +93,7 @@
                 android:layout_marginBottom="9dp" />
 
             <TextView
-                android:text="precipitation_ amt"
+                android:text="precipitation amt"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/precipitation_amount"
